@@ -1,0 +1,75 @@
+{
+  "name": "moirei/event-tracking",
+  "description": "Send application events to analytics services and data-warehouse.",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Augustus",
+      "email": "augustusokoye@moirei.com"
+    }
+  ],
+  "keywords": [
+    "MOIREI",
+    "Laravel",
+    "analytics",
+    "events",
+    "tracking",
+    "google",
+    "mixpanel"
+  ],
+  "scripts": {
+    "pint": "./vendor/bin/pint",
+    "pint:test": "./vendor/bin/pint --test",
+    "test": "./vendor/bin/pest"
+  },
+  "require": {
+    "php": "^8.0",
+    "illuminate/support": "^7|^8|^9",
+    "illuminate/contracts": "^7|^8|^9",
+    "laravel/helpers": "^1.5",
+    "sinergi/browser-detector": "^6.1"
+  },
+  "require-dev": {
+    "pestphp/pest": "^1.21",
+    "pestphp/pest-plugin-laravel": "^1.2",
+    "orchestra/testbench": "^7.5",
+    "illuminate/contracts": "^7|^8|^9",
+    "phpunit/phpunit": "^9.5",
+    "thled/pest-plugin-shorthands": "^1.1",
+    "mixpanel/mixpanel-php": "^2.10",
+    "spatie/invade": "^1.1",
+    "theiconic/php-ga-measurement-protocol": "^2.9",
+    "laravel/pint": "^1.2"
+  },
+  "suggest": {
+    "mixpanel/mixpanel-php": "Required to use in-built Mixpanel Channel",
+    "theiconic/php-ga-measurement-protocol": "Required to use in-built GA Channel"
+  },
+  "autoload": {
+    "psr-4": {
+      "MOIREI\\EventTracking\\": "src",
+      "MOIREI\\EventTracking\\Tests\\": "tests"
+    },
+    "files": [
+      "src/lib-helpers.php"
+    ]
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "MOIREI\\EventTracking\\EventTrackingServiceProvider"
+      ],
+      "aliases": {
+        "Events": "MOIREI\\EventTracking\\Facades\\Events"
+      }
+    }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "config": {
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    }
+  }
+}
