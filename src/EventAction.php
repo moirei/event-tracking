@@ -55,6 +55,11 @@ class EventAction
 
         if (is_string($user)) {
             $userObject->id = $user;
+            $userObject->name = null;
+            $userObject->firstName =  null;
+            $userObject->lastName = null;
+            $userObject->email = null;
+            $userObject->createdAt = null;
         } else {
             $userObject->id = $user->getId();
             $userObject->name = $user->getName();

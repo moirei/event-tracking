@@ -17,6 +17,8 @@ All documentation is available at [the documentation site](https://moirei.github
 
 ## Example
 
+Track an event
+
 ```php
 Events::track('Purchase', $order);
 
@@ -27,6 +29,18 @@ Events::listen(OrderPlacedEvent::class);
 
 // Elsewhere in your app
 OrderPlacedEvent::dispatch($order);
+```
+
+Identify and update a user profile
+
+```php
+Events::identify($user->id, [
+    '$first_name'       => $user->first_name,
+    '$last_name'        => $user->last_name,
+    '$email'            => $user->email,
+    '$phone'            => $user->phone,
+    "Favorite Color"    => $user->favoriteColor,
+]);
 ```
 
 ## Installation

@@ -9,6 +9,38 @@ use MOIREI\EventTracking\Facades\Events;
 Events::track("New Order", $order);
 ```
 
+## Identify
+
+Identify and update a user profile
+
+```php
+// send only to mixpanel
+Events::channel('mixpanel')->identify($user->id, [
+    '$first_name'       => $user->first_name,
+    '$last_name'        => $user->last_name,
+    '$email'            => $user->email,
+    '$phone'            => $user->phone,
+    "Favorite Color"    => $user->favoriteColor,
+]);
+```
+
+The `identify` utility does not currently support property remapping. The above example is for `Mixpanel`.
+
+However, models that implement `EventUser` can directly provide core identification properties.
+
+```php
+...
+use MOIREI\EventTracking\Contracts\EventUser;
+
+class User extends Model implements EventUser{
+    ...
+}
+```
+
+```php
+Events::identify($user);
+```
+
 ## Channels
 
 Event channels handle sending events to different analytics tools.

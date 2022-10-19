@@ -49,8 +49,8 @@ class Mixpanel extends EventChannel
     public function identify(IdentityPayload $data)
     {
         $this->mixpanel->people->set(
-            $data->distinctId,
-            $this->getIdentityPayload($data),
+            $data->user->id,
+            array_filter($data->properties) + $this->getIdentityPayload($data),
             $data->ip
         );
     }
