@@ -10,7 +10,7 @@ beforeEach(function () {
     $request = new Request();
     $this->eventTracking = new EventTracking($request);
     $this->fakeChannel = [
-        'handler' => \MOIREI\EventTracking\Channel\Mixpanel::class,
+        'handler' => \MOIREI\EventTracking\Channels\Mixpanel::class,
         'config' => [],
         'disabled' => false,
     ];

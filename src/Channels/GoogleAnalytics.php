@@ -1,6 +1,6 @@
 <?php
 
-namespace MOIREI\EventTracking\Channel;
+namespace MOIREI\EventTracking\Channels;
 
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;

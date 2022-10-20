@@ -18,13 +18,20 @@ return [
         | @see https://github.com/mixpanel/mixpanel-php
         */
         'mixpanel' => [
-            'handler' => \MOIREI\EventTracking\Channel\Mixpanel::class,
+            'handler' => \MOIREI\EventTracking\Channels\Mixpanel::class,
             /*
             | Accepts array or string: use string to refer to another config.
             | Use configuration options for mixpanel/mixpanel-php
             | Be sure to include "token" key
             */
-            'config' => 'services.mixpanel',
+            // 'config' => 'services.mixpanel',
+            'config' => [
+                'token' => env('MIXPANEL_TOKEN'),
+                'host' => env('MIXPANEL_HOST', 'api.mixpanel.com'),
+                'debug' => env('MIXPANEL_DEBUG', config('env') === 'production' ? false : true),
+                'consumer' => 'curl', // `secket` is the default consumer. `curl` is more stable for working with queues but requires `use_ssl` set to `true`
+                'use_ssl' => true,
+            ],
             'disabled' => false,
         ],
 
@@ -37,7 +44,7 @@ return [
         | @see https://github.com/theiconic/php-ga-measurement-protocol
         */
         'ga' => [
-            'handler' => \MOIREI\EventTracking\Channel\GoogleAnalytics::class,
+            'handler' => \MOIREI\EventTracking\Channels\GoogleAnalytics::class,
             'config' => [
                 /*
                 |--------------------------------------------------------------------------
@@ -108,13 +115,13 @@ return [
         'disabled' => false,
         'observe' => [
             // \App\Models\User::class,
-            \App\Models\User::class => [
-                'created' => [
-                    'name' => 'User: Registered',
-                    'properties' => 'toArray',
-                ],
-                'deleted' => 'User: Deactivated',
-            ],
+            // \App\Models\User::class => [
+            //     'created' => [
+            //         'name' => 'User: Registered',
+            //         'properties' => 'toArray',
+            //     ],
+            //     'deleted' => 'User: Deactivated',
+            // ],
         ],
         'listen' => [
             \Illuminate\Auth\Events\Login::class => 'Login',

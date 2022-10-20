@@ -1,7 +1,7 @@
 <?php
 
-use MOIREI\EventTracking\Channel\GoogleAnalytics;
-use MOIREI\EventTracking\Channel\Mixpanel;
+use MOIREI\EventTracking\Channels\GoogleAnalytics;
+use MOIREI\EventTracking\Channels\Mixpanel;
 use MOIREI\EventTracking\EventTrackingServiceProvider;
 use MOIREI\EventTracking\Facades\Events;
 
@@ -9,9 +9,9 @@ uses()->group('event-tracking');
 
 it('should send event to all channels', function () {
     /** @var \Mockery\LegacyMockInterface */
-    $eventChannel1 = \Mockery::mock(GoogleAnalytics::class.'[track,initialize]');
+    $eventChannel1 = \Mockery::mock(GoogleAnalytics::class . '[track,initialize]');
     /** @var \Mockery\LegacyMockInterface */
-    $eventChannel2 = \Mockery::mock(Mixpanel::class.'[track,initialize]');
+    $eventChannel2 = \Mockery::mock(Mixpanel::class . '[track,initialize]');
 
     $eventChannel1->shouldReceive('track');
     $eventChannel1->shouldReceive('initialize');
@@ -27,9 +27,9 @@ it('should send event to all channels', function () {
 
 it('should send event to GA channel', function () {
     /** @var \Mockery\LegacyMockInterface */
-    $eventChannel1 = \Mockery::mock(GoogleAnalytics::class.'[track,initialize]');
+    $eventChannel1 = \Mockery::mock(GoogleAnalytics::class . '[track,initialize]');
     /** @var \Mockery\LegacyMockInterface */
-    $eventChannel2 = \Mockery::mock(Mixpanel::class.'[track,initialize]');
+    $eventChannel2 = \Mockery::mock(Mixpanel::class . '[track,initialize]');
 
     $eventChannel1->shouldReceive('track')->times(2);
     $eventChannel1->shouldReceive('initialize');

@@ -9,4 +9,6 @@ class EventPayload
     public Device $device;
 
     public array $properties;
+
+    public ?User $user;
 }

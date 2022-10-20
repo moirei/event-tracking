@@ -3,7 +3,7 @@
 namespace MOIREI\EventTracking;
 
 use Closure;
-use MOIREI\EventTracking\Channel\EventChannel;
+use MOIREI\EventTracking\Channels\EventChannel;
 use MOIREI\EventTracking\Objects\EventPayload;
 use MOIREI\EventTracking\Objects\IdentityPayload;
 
@@ -41,14 +41,7 @@ final class EventHandler
     protected static function eachChannel(array $channels, Closure $callback)
     {
         foreach ($channels as $channel) {
-            $config = config('event-tracking.channels.'.$channel);
-            $options = $config['config'];
-            if (is_string($options)) {
-                $options = config($options, []);
-            }
-            /** @var EventChannel */
-            $instance = app()->make($config['handler']);
-            $instance->initialize($options);
+            $instance = EventTracking::getChannel($channel);
             $callback($instance, $channel);
         }
     }

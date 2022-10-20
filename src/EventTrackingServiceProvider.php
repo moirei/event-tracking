@@ -16,7 +16,7 @@ class EventTrackingServiceProvider extends ServiceProvider
             ], 'event-tracking');
         }
 
-        if (config('event-tracking.auto_tracking.disabled', false) !== false) {
+        if (!config('event-tracking.auto_tracking.disabled', false)) {
             Events::observe(config('event-tracking.auto_tracking.observe', []));
             Events::listen(TrackableEvent::class);
             Events::listen(config('event-tracking.auto_tracking.listen', []));

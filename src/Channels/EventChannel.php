@@ -1,6 +1,6 @@
 <?php
 
-namespace MOIREI\EventTracking\Channel;
+namespace MOIREI\EventTracking\Channels;
 
 use MOIREI\EventTracking\Objects\EventPayload;
 use MOIREI\EventTracking\Objects\IdentityPayload;

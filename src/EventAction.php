@@ -4,6 +4,8 @@ namespace MOIREI\EventTracking;
 
 use Illuminate\Support\Arr;
 use MOIREI\EventTracking\Contracts\EventUser;
+use MOIREI\EventTracking\Contracts\EventUserProxy;
+use MOIREI\EventTracking\Facades\Events;
 use MOIREI\EventTracking\Jobs\ProcessIdentifyEvent;
 use MOIREI\EventTracking\Jobs\ProcessTrackEvent;
 use MOIREI\EventTracking\Objects\Device;
@@ -34,6 +36,7 @@ class EventAction
         $eventPayload->event = $this->getEventName($event);
         $eventPayload->properties = $this->getEventProperties($eventPayload->event, $properties);
         $eventPayload->device = $this->device;
+        $eventPayload->user = Events::user();
 
         if (config('event-tracking.queue.disabled')) {
             EventHandler::event($eventPayload, $this->channels, $this->adapters);
@@ -45,34 +48,35 @@ class EventAction
     /**
      * Identify a user.
      *
-     * @param  EventUser|string  $user
+     * @param  EventUser|EventUserProxy|User|string  $user
      * @param  array  $properties
      */
-    public function identify(EventUser|string $user, array $properties = [])
+    public function identify(EventUser|EventUserProxy|User|string $user, array $properties = [])
     {
         $identity = new IdentityPayload();
-        $userObject = new User();
+        $userObject = $user instanceof User ? $user : new User();
 
         if (is_string($user)) {
             $userObject->id = $user;
-            $userObject->name = null;
-            $userObject->firstName =  null;
-            $userObject->lastName = null;
-            $userObject->email = null;
-            $userObject->createdAt = null;
-        } else {
+        } elseif ($user instanceof EventUserProxy) {
+            $userObject = $user->getEventUser();
+        } elseif ($user instanceof EventUser) {
             $userObject->id = $user->getId();
             $userObject->name = $user->getName();
             $userObject->firstName = $user->getFirstName();
             $userObject->lastName = $user->getLastName();
             $userObject->email = $user->getEmail();
             $userObject->createdAt = $user->getCreatedDate();
-            $properties = array_merge($user->getProperties(), $properties);
+            $userObject->fill($user->getProperties());
         }
 
         $identity->user = $userObject;
         $identity->ip = $this->device->ip;
-        $identity->properties = $properties;
+        $identity->properties = array_merge($user->toArray(), $properties); // TODO: investigate benefits of using $user->getArrayCopy() instead
+
+        if (!Events::user()) {
+            Events::user($userObject);
+        }
 
         if (config('event-tracking.queue.disabled')) {
             EventHandler::identify($identity, $this->channels, $this->adapters);
@@ -85,12 +89,12 @@ class EventAction
     {
         $event = Helpers::normaliseValue($event);
 
-        return Arr::get(EventTracking::$globalEventMap, "$event.name", $event);
+        return Arr::get(Events::getEventMaps(), "$event.name", $event);
     }
 
     protected function getEventProperties(string $event, $properties): array
     {
-        if ($propertiesKey = Arr::get(EventTracking::$globalEventMap, "$event.properties")) {
+        if ($propertiesKey = Arr::get(Events::getEventMaps(), "$event.properties")) {
             if (is_object($properties)) {
                 if (method_exists($properties, $propertiesKey)) {
                     return $properties->$propertiesKey();
@@ -104,6 +108,9 @@ class EventAction
             }
         }
 
-        return (array) $properties;
+        return array_merge(
+            (array) $properties,
+            Events::getSuperProperties()
+        );
     }
 }

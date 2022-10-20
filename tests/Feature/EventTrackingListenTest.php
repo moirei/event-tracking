@@ -9,9 +9,9 @@ it('should listen to event with map name using array', function () {
     EventTracking::listen([
         Login::class => 'LoginEvent',
     ]);
-    expect(EventTracking::$globalEventMap)->toHaveKey(Login::class);
-    expect(EventTracking::$globalEventMap[Login::class])->toHaveKey('name');
-    expect(EventTracking::$globalEventMap[Login::class]['name'])->toEqual('LoginEvent');
+    expect(EventTracking::getEventMaps())->toHaveKey(Login::class);
+    expect(EventTracking::getEventMaps()[Login::class])->toHaveKey('name');
+    expect(EventTracking::getEventMaps()[Login::class]['name'])->toEqual('LoginEvent');
 });
 
 it('should listen to event with map name and property using array', function () {
@@ -21,9 +21,9 @@ it('should listen to event with map name and property using array', function () 
             'properties' => 'toArray',
         ],
     ]);
-    expect(EventTracking::$globalEventMap)->toHaveKey(Login::class);
-    expect(EventTracking::$globalEventMap[Login::class])->toHaveKey('name');
-    expect(EventTracking::$globalEventMap[Login::class])->toHaveKey('properties');
-    expect(EventTracking::$globalEventMap[Login::class]['name'])->toEqual('LoginEvent');
-    expect(EventTracking::$globalEventMap[Login::class]['properties'])->toEqual('toArray');
+    expect(EventTracking::getEventMaps())->toHaveKey(Login::class);
+    expect(EventTracking::getEventMaps()[Login::class])->toHaveKey('name');
+    expect(EventTracking::getEventMaps()[Login::class])->toHaveKey('properties');
+    expect(EventTracking::getEventMaps()[Login::class]['name'])->toEqual('LoginEvent');
+    expect(EventTracking::getEventMaps()[Login::class]['properties'])->toEqual('toArray');
 });

@@ -92,9 +92,10 @@ abstract class EventAdapter
     /**
      * Get extra event properties.
      *
+     * @param  EventPayload  $payload
      * @return array
      */
-    public function extraProperties()
+    public function extraProperties(EventPayload $payload)
     {
         return [
             //
@@ -111,7 +112,7 @@ abstract class EventAdapter
         foreach ($map as $key => $value) {
             Arr::set(
                 static::$eventNameMap,
-                static::class.'.'.Helpers::normaliseValue($key),
+                static::class . '.' . Helpers::normaliseValue($key),
                 Helpers::normaliseValue($value)
             );
         }
@@ -139,7 +140,7 @@ abstract class EventAdapter
         foreach ($map as $key => $value) {
             Arr::set(
                 static::$eventPropertyMap,
-                static::class.'.'.Helpers::normaliseValue($key),
+                static::class . '.' . Helpers::normaliseValue($key),
                 $value
             );
         }
@@ -148,13 +149,17 @@ abstract class EventAdapter
     /**
      * Map event property.
      *
-     * @param  array<string, string|\Closure>  $map
+     * @param  string|string[] $key
+     * @param  string|\Closure $value
      */
     protected static function mapEventProperty($key, string|\Closure $value)
     {
-        static::mapEventProperties([
-            Helpers::normaliseValue($key) => $value,
-        ]);
+        $keys = is_array($key) ? $key : [$key];
+        foreach ($keys as $key) {
+            static::mapEventProperties([
+                Helpers::normaliseValue($key) => $value,
+            ]);
+        }
     }
 
     /**
@@ -167,7 +172,7 @@ abstract class EventAdapter
     {
         return Arr::has(
             static::$eventNameMap,
-            static::class.'.'.Helpers::normaliseValue($key),
+            static::class . '.' . Helpers::normaliseValue($key),
         );
     }
 
@@ -181,7 +186,7 @@ abstract class EventAdapter
     {
         return Arr::get(
             static::$eventNameMap,
-            static::class.'.'.Helpers::normaliseValue($key),
+            static::class . '.' . Helpers::normaliseValue($key),
         );
     }
 
@@ -195,7 +200,7 @@ abstract class EventAdapter
     {
         return Arr::has(
             static::$eventPropertyMap,
-            static::class.'.'.Helpers::normaliseValue($key),
+            static::class . '.' . Helpers::normaliseValue($key),
         );
     }
 
@@ -209,7 +214,7 @@ abstract class EventAdapter
     {
         return Arr::get(
             static::$eventPropertyMap,
-            static::class.'.'.Helpers::normaliseValue($key),
+            static::class . '.' . Helpers::normaliseValue($key),
         );
     }
 

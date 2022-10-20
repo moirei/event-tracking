@@ -1,6 +1,6 @@
 <?php
 
-namespace MOIREI\EventTracking\Channel;
+namespace MOIREI\EventTracking\Channels;
 
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
@@ -16,19 +16,33 @@ class Mixpanel extends EventChannel
     protected MixpanelAgent $mixpanel;
 
     /**
+     * Flush the queue when destructing
+     */
+    public function __destruct()
+    {
+        $this->mixpanel->flush();
+        $this->mixpanel->people->flush();
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function initialize(array $config)
     {
         $configDefaults = [
             'consumer' => 'socket',
-            'connect_timeout' => 2,
-            'timeout' => 2,
+            'connect_timeout' => 10,
+            'timeout' => 10,
         ];
 
         $this->mixpanel = MixpanelAgent::getInstance(
             Arr::get($config, 'token'),
-            array_merge($configDefaults, $config)
+            array_merge($configDefaults, $config, [
+                'error_callback' => function ($code, $msg) {
+                    error_log('error: ' . $msg);
+                    error_log('code: ' . $code);
+                }
+            ])
         );
     }
 
@@ -37,6 +51,7 @@ class Mixpanel extends EventChannel
      */
     public function track(EventPayload $data)
     {
+        $data->properties['distinct_id'] = $data->user?->id;
         $this->mixpanel->track(
             $data->event,
             array_filter($data->properties) + $this->getDeviceData($data)

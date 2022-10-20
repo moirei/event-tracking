@@ -6,8 +6,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Event;
 use MOIREI\EventTracking\Contracts\EventUser;
+use MOIREI\EventTracking\Contracts\EventUserProxy;
 use MOIREI\EventTracking\Listeners\TrackableEventListener;
 use MOIREI\EventTracking\Objects\Device as DeviceObject;
+use MOIREI\EventTracking\Objects\User;
 use MOIREI\EventTracking\Observers\ModelObserver;
 use Sinergi\BrowserDetector\Browser;
 use Sinergi\BrowserDetector\Device;
@@ -19,7 +21,8 @@ class EventTracking
 
     public static $adapters = [];
 
-    public static $globalEventMap = [];
+    protected static $globalEventMap = [];
+    protected $instanceCache = [];
 
     public function __construct(Request $request)
     {
@@ -40,10 +43,10 @@ class EventTracking
     /**
      * Identify a user.
      *
-     * @param  EventUser|string  $user
+     * @param  EventUser|EventUserProxy|User|string  $user
      * @param  array  $properties
      */
-    public function identify(EventUser|string $user, array $properties = [])
+    public function identify(EventUser|EventUserProxy|User|string $user, array $properties = [])
     {
         return $this->all()->identify($user, $properties);
     }
@@ -171,6 +174,111 @@ class EventTracking
     public static function mapEvent(array $map)
     {
         static::$globalEventMap = array_merge(static::$globalEventMap, $map);
+    }
+
+    /**
+     * Get globally mapped events.
+     *
+     * @return  array<string, string|\Closure>
+     */
+    public static function getEventMaps()
+    {
+        return static::$globalEventMap;
+    }
+
+    /**
+     * Set super properties.
+     *
+     * @param  array<string, string|\Closure>  $map
+     */
+    public function superProperties(array $map)
+    {
+        $this->setCache('$superProperties', array_merge($this->getCache('$superProperties', []), $map));
+    }
+
+    /**
+     * Get registered super properties.
+     *
+     * @return  array<string, string|int>
+     */
+    public function getSuperProperties()
+    {
+        return $this->getCache('$superProperties', []);
+    }
+
+    /**
+     * Get/set active user.
+     *
+     * @param User|EventUser|EventUserProxy $user
+     * @return  User|null
+     */
+    public function user(User|EventUser|EventUserProxy $user = null): User|null
+    {
+        if ($user) {
+            if ($user instanceof EventUserProxy) {
+                $user = $user->getEventUser();
+            } elseif ($user instanceof EventUser) {
+                $userObject = new User();
+                $userObject->id = $user->getId();
+                $userObject->name = $user->getName();
+                $userObject->firstName = $user->getFirstName();
+                $userObject->lastName = $user->getLastName();
+                $userObject->email = $user->getEmail();
+                $userObject->createdAt = $user->getCreatedDate();
+                $user = $userObject;
+            }
+            $this->setCache('$user', $user);
+        }
+        return $this->getCache('$user');
+    }
+
+    /**
+     * Get a registered event channel.
+     *
+     * @param  array<string, string|\Closure>  $map
+     * @throws \InvalidArgumentException
+     * @return \MOIREI\EventTracking\Channels\EventChannel
+     */
+    public static function getChannel(string $channel)
+    {
+        // instance is not cached so that they can be auto
+        // destroyed in queues.
+
+        $config = config('event-tracking.channels.' . $channel);
+        if (!$config) {
+            throw new \InvalidArgumentException("Unknown channel $channel");
+        }
+        $options = $config['config'];
+        if (is_string($options)) {
+            $options = config($options, []);
+        }
+        /** @var \MOIREI\EventTracking\Channels\EventChannel */
+        $instance = app()->make($config['handler']);
+        $instance->initialize($options);
+        return $instance;
+    }
+
+    /**
+     * Cache a miscellaneous value.
+     *
+     * @param  string  $key
+     * @param  mixed  $value
+     */
+    public function setCache($key, $value)
+    {
+        $this->instanceCache[$key] = $value;
+    }
+
+    /**
+     * Get a cached key value.
+     *
+     * @param  string  $key
+     * @param  mixed  $default
+     * @return mixed
+     */
+    public function getCache($key, $default = null)
+    {
+        return array_key_exists($key, $this->instanceCache) ? $this->instanceCache[$key] : $default;
     }
 
     /**

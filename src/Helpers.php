@@ -77,6 +77,7 @@ class Helpers
      */
     public static function resolveAdapters(array $adapters): array
     {
+        // TODO: throw conflict/resolution error when multile adapters register same mappers
         return array_map(function ($adapter) {
             if (!isset(static::$adaptersCache[$adapter])) {
                 /** @var \MOIREI\EventTracking\Adapters\EventAdapter */
@@ -105,7 +106,7 @@ class Helpers
         /** @var EventAdapter */
         return Arr::first($adapters, function (EventAdapter $adapter) use ($channelKey, $data) {
             $channels = $adapter->channels();
-            if (count($channels) && !in_array($channelKey, $channels)) {
+            if (!in_array('*', $channels) && count($channels) && !in_array($channelKey, $channels)) {
                 return false;
             }
 

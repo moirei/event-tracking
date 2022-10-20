@@ -1,6 +1,6 @@
 # Event Tracking
 
-This package allows you to send application events to analytics services and data-warehouse. Inspired by [Analytics.io](https://github.com/DavidWells/analytics).
+This package allows you to send application events to analytics services and any data-warehouse of your choice. Although inspired by [Analytics.io](https://github.com/DavidWells/analytics) and [Segment](https://segment.com), it should provide you more flexibility over your events and how they're manually or automatically handled.
 
 ## Documentation
 
@@ -8,12 +8,12 @@ All documentation is available at [the documentation site](https://moirei.github
 
 ## Features
 
-- Send events to multiple analytics channels
+- Send events to multiple analytics channels with ease
 - Flexible event name and property mapping per channel per event
 - Automatically capture and track local and vendor events
 - Capture and track observable model events
 - Use PHP Enums as event names
-- Send events asynchronously queues
+- Send events asynchronously with queues
 
 ## Example
 

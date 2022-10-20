@@ -23,6 +23,10 @@ module.exports = {
         path: "/guide/track-events",
       },
       {
+        title: "Identify users",
+        path: "/guide/identify-users",
+      },
+      {
         title: "Using enums",
         path: "/guide/using-enums",
       },

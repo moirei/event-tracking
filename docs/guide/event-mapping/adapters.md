@@ -10,6 +10,8 @@ use MOIREI\EventTracking\Adapters\Adapters;
 class MyAdapter extends EventAdapter
 {
     /**
+     * Omit to apply to all channels.
+     *
      * {@inheritdoc}
      */
     public function channels()
@@ -25,6 +27,8 @@ class MyAdapter extends EventAdapter
     public function only()
     {
         return [
+            \Illuminate\Auth\Events\Login::class,
+            \Illuminate\Auth\Events\Logout::class,
             \Illuminate\Auth\Events\Registered::class,
         ];
     }
@@ -36,12 +40,45 @@ class MyAdapter extends EventAdapter
      */
     public static function configure()
     {
+        static::mapEvent(Illuminate\Auth\Events\Login::class, 'Login');
+        static::mapEvent(Illuminate\Auth\Events\Logout::class, 'Logout');
         static::mapEvent(Illuminate\Auth\Events\Registered::class, 'Signup');
+
+        // or
+
+        static::mapEvents([
+            \Illuminate\Auth\Events\Login::class => 'Login',
+            \Illuminate\Auth\Events\Logout::class => 'Logout',
+            \Illuminate\Auth\Events\Registered::class => 'Signup',
+        ]);
+
+        // map event property
+
+        static::mapEventProperty(
+            \Illuminate\Auth\Events\Login::class,
+            function (EventPayload $payload) {
+                $user = Arr::get($payload->properties, 'user');
+                ...
+                return $user;
+            }
+        );
+
+        // or use ore mapper for multiple events
+
+        static::mapEventProperty([
+            \Illuminate\Auth\Events\Login::class,
+            \Illuminate\Auth\Events\Logout::class,
+            \Illuminate\Auth\Events\Registered::class,
+        ], function (EventPayload $payload) {
+            $user = Arr::get($payload->properties, 'user');
+            ...
+            return $user;
+        });
     }
 }
 ```
 
-In this case only the `Registered::class` event is renamed.
+In this case only `Login`, `Logout` and `Registered` events are renamed by this adapter.
 
 You may register adapters in config;
 
