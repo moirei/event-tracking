@@ -2,7 +2,7 @@
 
 use MOIREI\EventTracking\Helpers;
 
-if (!function_exists('array_get_any')) {
+if (! function_exists('array_get_any')) {
     /**
      * Get any of the keys from object or array.
      * Allows "dot" notation.
@@ -17,7 +17,21 @@ if (!function_exists('array_get_any')) {
     }
 }
 
-if (!function_exists('is_enum')) {
+if (! function_exists('array_is_any')) {
+    /**
+     * If any of the items in array are of value
+     *
+     * @param  array  $array
+     * @param  mixed  $value
+     * @return bool
+     */
+    function array_is_any($array, array $keys, mixed $default = null)
+    {
+        return Helpers::isAny($array, $keys, $default);
+    }
+}
+
+if (! function_exists('is_enum')) {
     /**
      * Check if value is an enum.
      *
@@ -30,14 +44,14 @@ if (!function_exists('is_enum')) {
     }
 }
 
-if (!function_exists('resolve_model_event')) {
+if (! function_exists('resolve_model_event')) {
     /**
      * Resolve model event name.
      *
-     * @param \Illuminate\Database\Eloquent\Model|string $model
-     * @param string $method
+     * @param  \Illuminate\Database\Eloquent\Model|string  $model
+     * @param  string  $method
      */
-    function resolve_model_event(\Illuminate\Database\Eloquent\Model|string $model, string $method)
+    function resolve_model_event(Illuminate\Database\Eloquent\Model|string $model, string $method)
     {
         return Helpers::resolveModelEvent($model, $method);
     }

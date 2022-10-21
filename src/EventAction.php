@@ -21,7 +21,7 @@ class EventAction
         protected array $channels,
         protected Device $device,
     ) {
-        $this->adapters = EventTracking::$adapters;
+        $this->adapters = EventTracking::getAdapters();
     }
 
     /**
@@ -33,15 +33,23 @@ class EventAction
     public function track($event, $properties = [])
     {
         $eventPayload = new EventPayload();
-        $eventPayload->event = $this->getEventName($event);
+        $eventPayload->originalEventName = Helpers::normaliseValue($event);
+        $eventPayload->event = $this->getEventMappedName($eventPayload->originalEventName);
         $eventPayload->properties = $this->getEventProperties($eventPayload->event, $properties);
         $eventPayload->device = $this->device;
         $eventPayload->user = Events::user();
 
-        if (config('event-tracking.queue.disabled')) {
-            EventHandler::event($eventPayload, $this->channels, $this->adapters);
-        } else {
-            ProcessTrackEvent::dispatch($eventPayload, $this->channels, $this->adapters);
+        $shouldRun = EventHandler::runHooks('before', $eventPayload->originalEventName, [$eventPayload, $properties, $this->channels]);
+
+        if ($shouldRun) {
+            if ($eventPayload->user !== ($user = Events::user())) {
+                $eventPayload->user = $user;
+            }
+            if (config('event-tracking.queue.disabled')) {
+                EventHandler::event($eventPayload, $this->channels, $this->adapters);
+            } else {
+                ProcessTrackEvent::dispatch($eventPayload, $this->channels, $this->adapters);
+            }
         }
     }
 
@@ -72,9 +80,9 @@ class EventAction
 
         $identity->user = $userObject;
         $identity->ip = $this->device->ip;
-        $identity->properties = array_merge($user->toArray(), $properties); // TODO: investigate benefits of using $user->getArrayCopy() instead
+        $identity->properties = array_merge($userObject->getArrayCopy(), $properties);
 
-        if (!Events::user()) {
+        if (! Events::user()) {
             Events::user($userObject);
         }
 
@@ -85,10 +93,8 @@ class EventAction
         }
     }
 
-    protected function getEventName($event): string
+    protected function getEventMappedName(string $event): string
     {
-        $event = Helpers::normaliseValue($event);
-
         return Arr::get(Events::getEventMaps(), "$event.name", $event);
     }
 

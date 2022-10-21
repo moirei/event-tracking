@@ -27,7 +27,34 @@ class Helpers
                 break;
             }
         }
+
         return $data;
+    }
+
+    /**
+     * If any of the items in array are of value
+     *
+     * @param  array  $array
+     * @param  mixed  $value
+     * @return bool
+     */
+    public static function isAny(array $array, mixed $value): bool
+    {
+        if (! count($array)) {
+            return false;
+        }
+        $array = array_map(fn ($item) => $item instanceof \UnitEnum ? $item->value : $item, $array);
+        $value = $value instanceof \UnitEnum ? $value->value : $value;
+
+        $inArray = false;
+
+        foreach ($array as $x) {
+            if (($inArray = ($x === $value))) {
+                break;
+            }
+        }
+
+        return $inArray;
     }
 
     /**
@@ -79,10 +106,10 @@ class Helpers
     {
         // TODO: throw conflict/resolution error when multile adapters register same mappers
         return array_map(function ($adapter) {
-            if (!isset(static::$adaptersCache[$adapter])) {
+            if (! isset(static::$adaptersCache[$adapter])) {
                 /** @var \MOIREI\EventTracking\Adapters\EventAdapter */
                 $instance = app($adapter);
-                $instance::configure();
+                $instance->configure();
                 static::$adaptersCache[$adapter] = $instance;
             }
 
@@ -106,7 +133,7 @@ class Helpers
         /** @var EventAdapter */
         return Arr::first($adapters, function (EventAdapter $adapter) use ($channelKey, $data) {
             $channels = $adapter->channels();
-            if (!in_array('*', $channels) && count($channels) && !in_array($channelKey, $channels)) {
+            if (! in_array('*', $channels) && count($channels) && ! in_array($channelKey, $channels)) {
                 return false;
             }
 
@@ -116,7 +143,7 @@ class Helpers
             }
             $except = static::normaliseValue($adapter->except());
 
-            return !in_array($data->event, $except);
+            return ! in_array($data->event, $except);
         });
     }
 
@@ -154,7 +181,11 @@ class Helpers
                 if (is_callable($propertyAccess)) {
                     $properties = $propertyAccess($data);
                 } elseif (is_string($propertyAccess)) {
-                    $properties = Arr::get($properties, $propertyAccess);
+                    if (method_exists($adapter, $propertyAccess)) {
+                        $properties = $adapter->$propertyAccess($data);
+                    } else {
+                        $properties = Arr::get($properties, $propertyAccess);
+                    }
                 } elseif (is_array($propertyAccess)) {
                     $properties = $propertyAccess;
                 }
@@ -170,12 +201,14 @@ class Helpers
 
     /**
      * Resolve model event name
-     * @param \Illuminate\Database\Eloquent\Model|string $model
-     * @param string $method
+     *
+     * @param  \Illuminate\Database\Eloquent\Model|string  $model
+     * @param  string  $method
      */
     public static function resolveModelEvent(\Illuminate\Database\Eloquent\Model|string $model, string $method)
     {
         $class = is_string($model) ? $model : get_class($model);
-        return $class . '@' . $method;
+
+        return $class.'@'.$method;
     }
 }

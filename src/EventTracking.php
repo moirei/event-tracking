@@ -2,6 +2,7 @@
 
 namespace MOIREI\EventTracking;
 
+use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Event;
@@ -19,9 +20,14 @@ class EventTracking
 {
     protected DeviceObject $device;
 
-    public static $adapters = [];
+    protected static $adapters = [];
+
+    protected static $hooks = [];
+
+    protected $channels = [];
 
     protected static $globalEventMap = [];
+
     protected $instanceCache = [];
 
     public function __construct(Request $request)
@@ -72,7 +78,7 @@ class EventTracking
         $allChannels = $this->channels();
         $except = is_array($channels) ? $channels : func_get_args();
         $channels = array_filter($allChannels, function ($channel) use ($except) {
-            return !in_array($channel, $except);
+            return ! in_array($channel, $except);
         });
 
         return $this->makeEvent(array_values($channels));
@@ -154,7 +160,7 @@ class EventTracking
     }
 
     /**
-     * Register model adapters.
+     * Register event adapters.
      *
      * @param  mixed  $adapters
      */
@@ -164,6 +170,26 @@ class EventTracking
         static::$adapters = array_unique(
             array_merge(static::$adapters, $adapters)
         );
+    }
+
+    /**
+     * Get registered event adapters.
+     *
+     * @return string[]
+     */
+    public static function getAdapters(): array
+    {
+        return static::$adapters;
+    }
+
+    /**
+     * Register event channels.
+     *
+     * @param  array  $channels
+     */
+    public function registerChannel(array $channels)
+    {
+        $this->channels = array_merge($this->channels, $channels);
     }
 
     /**
@@ -184,6 +210,60 @@ class EventTracking
     public static function getEventMaps()
     {
         return static::$globalEventMap;
+    }
+
+    /**
+     * Register a before hook
+     *
+     * @param  mixed  $events
+     * @param  Closure  $handler
+     */
+    public static function before(mixed $events, Closure $handler)
+    {
+        static::addEventHook('before', $events, $handler);
+    }
+
+    /**
+     * Register a after hook
+     *
+     * @param  mixed  $events
+     * @param  Closure  $handler
+     */
+    public static function after(mixed $events, Closure $handler)
+    {
+        static::addEventHook('after', $events, $handler);
+    }
+
+    /**
+     * Add a new hook for events.
+     *
+     * @param  string  $name
+     * @param  mixed  $events
+     * @param  Closure  $handler
+     */
+    protected static function addEventHook(string $name, mixed $events, Closure $handler)
+    {
+        $events = is_array($events) ? $events : [$events];
+        foreach ($events as $event) {
+            $event = Helpers::normaliseValue($event);
+            $handlers = Arr::get(static::$hooks, "$event.$name", []);
+            $handlers[] = $handler;
+            Arr::set(static::$hooks, "$event.$name", $handlers);
+        }
+    }
+
+    /**
+     * Get registered hook handlers for event.
+     *
+     * @param  string  $hook
+     * @param  mixed  $event
+     * @return Closure[]
+     */
+    public static function getEventHookHandlers(string $hook, $event): array
+    {
+        $event = Helpers::normaliseValue($event);
+
+        return Arr::get(static::$hooks, "$event.$hook", []);
     }
 
     /**
@@ -209,7 +289,7 @@ class EventTracking
     /**
      * Get/set active user.
      *
-     * @param User|EventUser|EventUserProxy $user
+     * @param  User|EventUser|EventUserProxy  $user
      * @return  User|null
      */
     public function user(User|EventUser|EventUserProxy $user = null): User|null
@@ -229,6 +309,7 @@ class EventTracking
             }
             $this->setCache('$user', $user);
         }
+
         return $this->getCache('$user');
     }
 
@@ -236,16 +317,17 @@ class EventTracking
      * Get a registered event channel.
      *
      * @param  array<string, string|\Closure>  $map
-     * @throws \InvalidArgumentException
      * @return \MOIREI\EventTracking\Channels\EventChannel
+     *
+     * @throws \InvalidArgumentException
      */
-    public static function getChannel(string $channel)
+    public function getChannel(string $channel)
     {
         // instance is not cached so that they can be auto
         // destroyed in queues.
 
-        $config = config('event-tracking.channels.' . $channel);
-        if (!$config) {
+        $config = Arr::get($this->channels, $channel);
+        if (! $config) {
             throw new \InvalidArgumentException("Unknown channel $channel");
         }
         $options = $config['config'];
@@ -255,6 +337,7 @@ class EventTracking
         /** @var \MOIREI\EventTracking\Channels\EventChannel */
         $instance = app()->make($config['handler']);
         $instance->initialize($options);
+
         return $instance;
     }
 
@@ -287,8 +370,8 @@ class EventTracking
     protected function channels()
     {
         $channels = [];
-        foreach (config('event-tracking.channels') as $name => $options) {
-            if (!Arr::get($options, 'disabled')) {
+        foreach ($this->channels as $name => $options) {
+            if (! Arr::get($options, 'disabled')) {
                 $channels[] = $name;
             }
         }
@@ -304,8 +387,8 @@ class EventTracking
         $deviceInfo = new Device();
 
         $device->url = $request->getUri();
-        $device->browser = trim(str_replace('unknown', '', $browserInfo->getName() . ' ' . $browserInfo->getVersion()));
-        $device->os = trim(str_replace('unknown', '', $osInfo->getName() . ' ' . $osInfo->getVersion()));
+        $device->browser = trim(str_replace('unknown', '', $browserInfo->getName().' '.$browserInfo->getVersion()));
+        $device->os = trim(str_replace('unknown', '', $osInfo->getName().' '.$osInfo->getVersion()));
         $device->hardware = trim(str_replace('unknown', '', $deviceInfo->getName()));
         $device->referer = $request->header('referer');
         $device->refererDomain = ($request->header('referer')
@@ -313,7 +396,7 @@ class EventTracking
             : null);
         $device->ip = $request->ip();
 
-        if (!$device->browser && $browserInfo->isRobot()) {
+        if (! $device->browser && $browserInfo->isRobot()) {
             $device->browser = 'Robot';
         }
 

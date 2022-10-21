@@ -9,45 +9,107 @@ use MOIREI\EventTracking\Helpers;
 
 class ModelObserver
 {
+    protected array $handle = ['created', 'updated',  'restored'];
+
+    protected array $other = ['retrieved', 'creating', 'updating', 'saving', 'deleting', 'deleted', 'restoring', 'forceDeleted'];
+
+    protected array $reserved = ['$all', '$only', '$except'];
+
     public function __construct(protected array $options = [])
     {
-        //
+        $extraEvents = array_filter(
+            array_keys($options),
+            function ($option) {
+                return ! in_array($option, $this->reserved);
+            }
+        );
+        if (count($extraEvents)) {
+            $this->handle = array_merge($this->handle, $extraEvents);
+        }
+
+        if (Arr::get($options, '$all')) {
+            $this->handle = array_merge($this->handle, $this->other);
+        } elseif ($only = Arr::get($options, '$only')) {
+            $this->handle = $only;
+        } elseif ($except = Arr::get($options, '$except')) {
+            $this->handle = array_filter(
+                array_merge($this->handle, $this->other),
+                function ($option) use ($except) {
+                    return ! in_array($option, $except);
+                }
+            );
+        }
     }
 
-    public function created($user)
+    public function retrieved($model)
     {
-        $eventName = $this->getEventName($user);
-        Events::track($eventName, $this->getEventProperties($user, $eventName));
+        $this->handle('retrieved', $model);
     }
 
-    public function updated($user)
+    public function creating($model)
     {
-        $eventName = $this->getEventName($user);
-        Events::track($eventName, $this->getEventProperties($user, $eventName));
+        $this->handle('creating', $model);
     }
 
-    public function deleted($user)
+    public function created($model)
     {
-        $eventName = $this->getEventName($user);
-        Events::track($eventName, $this->getEventProperties($user, $eventName));
+        $this->handle('created', $model);
     }
 
-    public function restored($user)
+    public function updating($model)
     {
-        $eventName = $this->getEventName($user);
-        Events::track($eventName, $this->getEventProperties($user, $eventName));
+        $this->handle('updating', $model);
     }
 
-    protected function getEventName($model): string
+    public function updated($model)
     {
-        $method = debug_backtrace()[1]['function'];
-        $nameOption = Arr::get($this->options, $method);
+        $this->handle('updated', $model);
+    }
+
+    public function saving($model)
+    {
+        $this->handle('saving', $model);
+    }
+
+    public function saved($model)
+    {
+        $this->handle('saved', $model);
+    }
+
+    public function deleting($model)
+    {
+        $this->handle('deleting', $model);
+    }
+
+    public function deleted($model)
+    {
+        $this->handle('deleted', $model);
+    }
+
+    public function restoring($model)
+    {
+        $this->handle('restoring', $model);
+    }
+
+    public function restored($model)
+    {
+        $this->handle('restored', $model);
+    }
+
+    public function forceDeleted($model)
+    {
+        $this->handle('forceDeleted', $model);
+    }
+
+    protected function getEventName($event, $model): string
+    {
+        $nameOption = Arr::get($this->options, $event);
         if (is_string(($nameOption))) {
             return $nameOption;
         }
         $nameOption = Arr::get($nameOption, 'name');
 
-        $eventName = $nameOption ?? Helpers::resolveModelEvent($model, $method);
+        $eventName = $nameOption ?? Helpers::resolveModelEvent($model, $event);
 
         if ($model instanceof TrackableModel) {
             return $model->getEventName($eventName);
@@ -56,15 +118,14 @@ class ModelObserver
         return $eventName;
     }
 
-    protected function getEventProperties($model, $eventName): array
+    protected function getEventProperties($event, $model, $eventName): array
     {
         if ($model instanceof TrackableModel) {
             return $model->getEventProperties($eventName);
         }
 
-        $method = debug_backtrace()[1]['function'];
-        $propertiesOption = Arr::get($this->options, $method);
-        if (!is_string(($propertiesOption))) {
+        $propertiesOption = Arr::get($this->options, $event);
+        if (! is_string(($propertiesOption))) {
             $propertiesOption = Arr::get($propertiesOption, 'properties');
             if (is_string($propertiesOption)) {
                 if (method_exists($model, $propertiesOption)) {
@@ -78,5 +139,13 @@ class ModelObserver
         }
 
         return [];
+    }
+
+    protected function handle(string $event, $model)
+    {
+        $eventName = $this->getEventName($event, $model);
+        if (in_array($event, $this->handle)) {
+            Events::track($eventName, $this->getEventProperties($event, $model, $eventName));
+        }
     }
 }

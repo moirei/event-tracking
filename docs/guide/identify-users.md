@@ -53,11 +53,11 @@ Events::user($user);
 The following middleware will automaticall set the authenticated user for all events during a request.
 
 ```php
-<?php
-
 namespace App\Http\Middleware;
 
 use Closure;
+use MOIREI\EventTracking\Contracts\EventUser as User;
+use MOIREI\EventTracking\Contracts\EventUserProxy;
 use MOIREI\EventTracking\Facades\Events;
 
 class EventUser
@@ -72,7 +72,7 @@ class EventUser
     public function handle($request, Closure $next)
     {
         $user = $request->user();
-        if ($user && $user instanceof EventUser) {
+        if ($user instanceof EventUserProxy || $user instanceof User) {
             Events::user($user);
         }
 

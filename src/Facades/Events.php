@@ -18,12 +18,16 @@ use MOIREI\EventTracking\Objects\User;
  * @method static void observe(mixed $models)
  * @method static void listen(mixed $events)
  * @method static void registerAdapter(mixed $adapters)
+ * @method static void registerChannel(array $channels)
  * @method static void mapEvent(array $map)
  * @method static array getEventMaps()
  * @method static void superProperties(array $map)
  * @method static array getSuperProperties()
  * @method static User|EventUser|EventUserProxy|null user(User|EventUser|EventUserProxy|null $user = null)
  * @method static \MOIREI\EventTracking\Channels\EventChannel getChannel(string $channel)
+ * @method static void before(mixed $events, Closure $handler)
+ * @method static void after(mixed $events, Closure $handler)
+ * @method static array getEventHookHandlers(string $hook, $event)
  */
 class Events extends Facade
 {

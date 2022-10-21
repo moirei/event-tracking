@@ -3,10 +3,12 @@
 use Illuminate\Http\Request;
 use MOIREI\EventTracking\EventAction;
 use MOIREI\EventTracking\EventTracking;
+use MOIREI\EventTracking\EventTrackingServiceProvider;
 
 uses()->group('event-tracking-query');
 
 beforeEach(function () {
+    app()->register(EventTrackingServiceProvider::class);
     $request = new Request();
     $this->eventTracking = new EventTracking($request);
     $this->fakeChannel = [
@@ -21,21 +23,19 @@ xit('expects eventTracking to extract device from request', function () {
 });
 
 xit('expects EventTracking::track to use all channels', function () {
-    $channels = [
+    $this->eventTracking->registerChannel([
         'channel-1' => $this->fakeChannel,
         'channel-2' => $this->fakeChannel,
-    ];
-    config(['event-tracking.channels' => $channels]);
+    ]);
 
     $this->eventTracking->track('testEvent');
 });
 
 xit('expects EventTracking::identify to use all channels', function () {
-    $channels = [
+    $this->eventTracking->registerChannel([
         'channel-1' => $this->fakeChannel,
         'channel-2' => $this->fakeChannel,
-    ];
-    config(['event-tracking.channels' => $channels]);
+    ]);
 
     $this->eventTracking->identify('user-id');
 });
@@ -45,8 +45,8 @@ it('expects EventTracking::all to use all channels', function () {
         'channel-1' => $this->fakeChannel,
         'channel-2' => $this->fakeChannel,
     ];
-    config(['event-tracking.channels' => $channels]);
 
+    $this->eventTracking->registerChannel($channels);
     $eventAction = $this->eventTracking->all();
 
     expect($eventAction)->toBeInstanceOf(EventAction::class);
@@ -54,12 +54,11 @@ it('expects EventTracking::all to use all channels', function () {
 });
 
 it('expects EventTracking::all to use all channels except disabled channels', function () {
-    $channels = [
+    $this->eventTracking->registerChannel([
         'channel-1' => $this->fakeChannel,
         'channel-2' => array_merge($this->fakeChannel, ['disabled' => true]),
         'channel-3' => $this->fakeChannel,
-    ];
-    config(['event-tracking.channels' => $channels]);
+    ]);
 
     $eventAction = $this->eventTracking->all();
 
@@ -69,12 +68,11 @@ it('expects EventTracking::all to use all channels except disabled channels', fu
 });
 
 it('expects EventTracking::except to use all enabled channels except specified channels', function () {
-    $channels = [
+    $this->eventTracking->registerChannel([
         'channel-1' => $this->fakeChannel,
         'channel-2' => array_merge($this->fakeChannel, ['disabled' => true]),
         'channel-3' => $this->fakeChannel,
-    ];
-    config(['event-tracking.channels' => $channels]);
+    ]);
 
     $eventAction = $this->eventTracking->except('channel-3');
 
@@ -84,12 +82,11 @@ it('expects EventTracking::except to use all enabled channels except specified c
 });
 
 it('expects EventTracking::only to use specified channels', function () {
-    $channels = [
+    $this->eventTracking->registerChannel([
         'channel-1' => $this->fakeChannel,
         'channel-2' => array_merge($this->fakeChannel, ['disabled' => true]),
         'channel-3' => $this->fakeChannel,
-    ];
-    config(['event-tracking.channels' => $channels]);
+    ]);
 
     $eventAction = $this->eventTracking->only('channel-3');
 

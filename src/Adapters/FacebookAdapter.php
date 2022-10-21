@@ -39,7 +39,7 @@ class FacebookAdapter extends EventAdapter
      *
      * @param  array<string, \Closure>  $map
      */
-    public static function configure()
+    public function configure()
     {
         static::mapEvent(EcommerceEvents::AddToCart, 'AddToCart');
         static::mapEvent(EcommerceEvents::InitiateCheckout, 'InitiateCheckout');

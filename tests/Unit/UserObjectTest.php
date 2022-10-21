@@ -4,19 +4,18 @@ use MOIREI\EventTracking\Objects\User as UserObject;
 
 uses()->group('user-object');
 
-
 it('should receive unknown property', function () {
-    $user  = new UserObject();
+    $user = new UserObject();
     $user->id = '34';
 
-    $user->type = "user";
+    $user->type = 'user';
 
     expect($user->toArray())->toHaveKey('type');
     expect($user->toArray()['type'])->toEqual('user');
 });
 
 it('should receive unknown array access', function () {
-    $user  = new UserObject();
+    $user = new UserObject();
     $user->id = '34';
 
     $user['age'] = 100;
@@ -26,7 +25,7 @@ it('should receive unknown array access', function () {
 });
 
 it('should fill object with values', function () {
-    $user  = new UserObject();
+    $user = new UserObject();
 
     $user->fill([
         'id' => 1,
@@ -44,7 +43,7 @@ it('should fill object with values', function () {
 });
 
 it('should receive input during create', function () {
-    $user  = new UserObject([
+    $user = new UserObject([
         'id' => 1,
         'age' => 100,
     ]);

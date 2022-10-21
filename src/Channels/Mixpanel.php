@@ -39,9 +39,9 @@ class Mixpanel extends EventChannel
             Arr::get($config, 'token'),
             array_merge($configDefaults, $config, [
                 'error_callback' => function ($code, $msg) {
-                    error_log('error: ' . $msg);
-                    error_log('code: ' . $code);
-                }
+                    error_log('error: '.$msg);
+                    error_log('code: '.$code);
+                },
             ])
         );
     }
@@ -95,6 +95,14 @@ class Mixpanel extends EventChannel
                 ->parse($data->user->createdAt)
                 ->format('Y-m-d\Th:i:s')
                 : null),
+            '$last_seen' => ($data->user->updatedAt
+                ? (new Carbon())
+                ->parse($data->user->updatedAt)
+                ->format('Y-m-d\Th:i:s')
+                : null),
+            '$city' => $data->user->city,
+            '$region' => $data->user->region,
+            '$country' => $data->user->country,
         ]);
     }
 }

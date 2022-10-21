@@ -12,22 +12,23 @@ class EventTrackingServiceProvider extends ServiceProvider
     {
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__ . '/../config/event-tracking.php' => config_path('event-tracking.php'),
+                __DIR__.'/../config/event-tracking.php' => config_path('event-tracking.php'),
             ], 'event-tracking');
         }
 
-        if (!config('event-tracking.auto_tracking.disabled', false)) {
+        if (! config('event-tracking.auto_tracking.disabled', false)) {
             Events::observe(config('event-tracking.auto_tracking.observe', []));
             Events::listen(TrackableEvent::class);
             Events::listen(config('event-tracking.auto_tracking.listen', []));
         }
 
         Events::registerAdapter(config('event-tracking.adapters', []));
+        Events::registerChannel(config('event-tracking.channels', []));
     }
 
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__ . '/../config/event-tracking.php', 'event-tracking');
+        $this->mergeConfigFrom(__DIR__.'/../config/event-tracking.php', 'event-tracking');
         $this->app->singleton('eventTracking', EventTracking::class);
     }
 

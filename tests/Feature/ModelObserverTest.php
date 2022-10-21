@@ -12,13 +12,13 @@ uses()->group('model-observer');
 
 it('expects observer event to use class path', function () {
     /** @var object */
-    $eventTracking = \Mockery::mock(EventTracking::class . '[track]', [new Request()]);
+    $eventTracking = \Mockery::mock(EventTracking::class.'[track]', [new Request()]);
 
     $user = new User;
     $observer = new ModelObserver([]);
 
     $eventName = Helpers::resolveModelEvent(User::class, 'created');
-    $eventProperties = invade($observer)->getEventProperties($user, $eventName);
+    $eventProperties = invade($observer)->getEventProperties('created', $user, $eventName);
 
     $eventTracking->shouldReceive('track')->withArgs([$eventName, $eventProperties]);
 
@@ -30,7 +30,7 @@ it('expects observer event to use class path', function () {
 
 it('expects observer event to use options name', function () {
     /** @var object */
-    $eventTracking = \Mockery::mock(EventTracking::class . '[track]', [new Request()]);
+    $eventTracking = \Mockery::mock(EventTracking::class.'[track]', [new Request()]);
 
     $user = new User;
     $eventName = 'User: Created';
@@ -38,7 +38,7 @@ it('expects observer event to use options name', function () {
         'created' => $eventName,
     ]);
 
-    $eventProperties = invade($observer)->getEventProperties($user, $eventName);
+    $eventProperties = invade($observer)->getEventProperties('created', $user, $eventName);
     $eventTracking->shouldReceive('track')->withArgs([$eventName, $eventProperties]);
 
     $this->instance(EventTracking::class, $eventTracking);
@@ -49,7 +49,7 @@ it('expects observer event to use options name', function () {
 
 it('expects observer event to use options name [2]', function () {
     /** @var object */
-    $eventTracking = \Mockery::mock(EventTracking::class . '[track]', [new Request()]);
+    $eventTracking = \Mockery::mock(EventTracking::class.'[track]', [new Request()]);
 
     $user = new User;
     $eventName = 'User: Created';
@@ -59,7 +59,7 @@ it('expects observer event to use options name [2]', function () {
         ],
     ]);
 
-    $eventProperties = invade($observer)->getEventProperties($user, $eventName);
+    $eventProperties = invade($observer)->getEventProperties('created', $user, $eventName);
     $eventTracking->shouldReceive('track')->withArgs([$eventName, $eventProperties]);
 
     $this->instance(EventTracking::class, $eventTracking);
@@ -70,7 +70,7 @@ it('expects observer event to use options name [2]', function () {
 
 it('expects observer event to use name from TrackableModel', function () {
     /** @var object */
-    $eventTracking = \Mockery::mock(EventTracking::class . '[track]', [new Request()]);
+    $eventTracking = \Mockery::mock(EventTracking::class.'[track]', [new Request()]);
 
     $eventName = 'User: Created';
     $user = new class($eventName) extends User implements TrackableModel
@@ -91,7 +91,7 @@ it('expects observer event to use name from TrackableModel', function () {
     };
     $observer = new ModelObserver([]);
 
-    $eventProperties = invade($observer)->getEventProperties($user, $eventName);
+    $eventProperties = invade($observer)->getEventProperties('created', $user, $eventName);
 
     $eventTracking->shouldReceive('track')->withArgs([$eventName, $eventProperties]);
 
@@ -103,7 +103,7 @@ it('expects observer event to use name from TrackableModel', function () {
 
 it('expects observer to use event property from options property', function () {
     /** @var object */
-    $eventTracking = \Mockery::mock(EventTracking::class . '[track]', [new Request()]);
+    $eventTracking = \Mockery::mock(EventTracking::class.'[track]', [new Request()]);
 
     $user = new class extends User
     {
@@ -130,7 +130,7 @@ it('expects observer to use event property from options property', function () {
 
 it('expects observer to use event property from options method', function () {
     /** @var object */
-    $eventTracking = \Mockery::mock(EventTracking::class . '[track]', [new Request()]);
+    $eventTracking = \Mockery::mock(EventTracking::class.'[track]', [new Request()]);
 
     $user = new class extends User
     {
@@ -160,7 +160,7 @@ it('expects observer to use event property from options method', function () {
 
 it('expects observer to use event property from options array', function () {
     /** @var object */
-    $eventTracking = \Mockery::mock(EventTracking::class . '[track]', [new Request()]);
+    $eventTracking = \Mockery::mock(EventTracking::class.'[track]', [new Request()]);
 
     $user = new User;
     $eventName = 'User: Created';
@@ -181,4 +181,60 @@ it('expects observer to use event property from options array', function () {
     app()->register(EventTrackingServiceProvider::class);
 
     $observer->created($user);
+});
+
+it('should not handle event not in default', function () {
+    /** @var object */
+    $eventTracking = \Mockery::mock(EventTracking::class.'[track]', [new Request()]);
+
+    $observer = new ModelObserver([]);
+
+    $eventTracking->shouldNotReceive('track');
+
+    $this->instance(EventTracking::class, $eventTracking);
+    app()->register(EventTrackingServiceProvider::class);
+
+    $observer->forceDeleted(new User());
+});
+
+it('should handle event not in default with $all option', function () {
+    /** @var object */
+    $eventTracking = \Mockery::mock(EventTracking::class.'[track]', [new Request()]);
+
+    $user = new User();
+    $observer = new ModelObserver([
+        '$all' => true,
+    ]);
+
+    $eventTracking->shouldReceive('track')->withArgs([Helpers::resolveModelEvent($user, 'forceDeleted'), []]);
+
+    $this->instance(EventTracking::class, $eventTracking);
+    app()->register(EventTrackingServiceProvider::class);
+
+    $observer->forceDeleted($user);
+});
+
+it('should include only provided event with $only option', function () {
+    $observer = new ModelObserver([
+        '$only' => ['retrieved'],
+    ]);
+    expect(invade($observer)->handle)->toEqual(['retrieved']);
+});
+
+it('should exclude provided event with $except option', function () {
+    $observer = new ModelObserver([
+        '$except' => ['created'],
+    ]);
+
+    expect(in_array('created', invade($observer)->handle))->toBeFalse();
+    expect(count(invade($observer)->handle))->toBeGreaterThan(count(invade($observer)->other));
+});
+
+it('should exclude additional events', function () {
+    $observer = new ModelObserver([
+        'retrieved' => 'Retrieved',
+    ]);
+
+    expect(in_array('retrieved', invade($observer)->handle))->toBeTrue();
+    expect(count(invade($observer)->handle))->toBeGreaterThanOrEqual(2);
 });

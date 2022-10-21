@@ -19,6 +19,14 @@ class User extends ArrayObject implements Arrayable
 
     public ?string $createdAt = null;
 
+    public ?string $updatedAt = null;
+
+    public ?string $city = null;
+
+    public ?string $region = null;
+
+    public ?string $country = null;
+
     public function __construct(array $attributes = [])
     {
         $this->fill($attributes);
@@ -27,7 +35,7 @@ class User extends ArrayObject implements Arrayable
     /**
      * Fill object data
      *
-     * @param array $attributes
+     * @param  array  $attributes
      */
     public function fill(array $attributes)
     {

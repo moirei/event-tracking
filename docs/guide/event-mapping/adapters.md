@@ -1,6 +1,6 @@
 # Adapters
 
-Adapters make it possible to tab into any given channel and event in order to modify the event name or payload properties.
+Adapters make it possible to tap into any given channel and event in order to modify the event name or payload properties.
 
 For example if you send events to `Mixpanel`, `GA`, and `BigQuery`, you can format certain events going to `Mixpanel` and `GA`.
 
@@ -38,7 +38,7 @@ class MyAdapter extends EventAdapter
      *
      * @param  array<string, \Closure>  $map
      */
-    public static function configure()
+    public function configure()
     {
         static::mapEvent(Illuminate\Auth\Events\Login::class, 'Login');
         static::mapEvent(Illuminate\Auth\Events\Logout::class, 'Logout');
@@ -62,23 +62,37 @@ class MyAdapter extends EventAdapter
                 return $user;
             }
         );
-
-        // or use ore mapper for multiple events
-
-        static::mapEventProperty([
-            \Illuminate\Auth\Events\Login::class,
-            \Illuminate\Auth\Events\Logout::class,
-            \Illuminate\Auth\Events\Registered::class,
-        ], function (EventPayload $payload) {
-            $user = Arr::get($payload->properties, 'user');
-            ...
-            return $user;
-        });
     }
 }
 ```
 
 In this case only `Login`, `Logout` and `Registered` events are renamed by this adapter.
+
+When mapping event properties, it's possible to register multiple events at once. You can also pass a string as a value. If the there is an existing public method then it's called to retrieve the mapped properties value; if not, then the value is used as key to pick the existing properties.
+
+```php
+class MyAdapter extends EventAdapter
+{
+    ...
+
+    public function configure()
+    {
+        ...
+
+        static::mapEventProperty([
+            \Illuminate\Auth\Events\Login::class,
+            \Illuminate\Auth\Events\Logout::class,
+            \Illuminate\Auth\Events\Registered::class,
+        ], 'getUserProperty');
+    }
+
+    public function getUserProperty(EventPayload $payload){
+        $user = Arr::get($payload->properties, 'user');
+        ...
+        return $user;
+    }
+}
+```
 
 You may register adapters in config;
 

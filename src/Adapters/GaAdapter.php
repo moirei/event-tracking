@@ -47,7 +47,7 @@ class GaAdapter extends EventAdapter
      *
      * @param  array<string, \Closure>  $map
      */
-    public static function configure()
+    public function configure()
     {
         static::mapEvent(EcommerceEvents::AddToCart, 'add_to_cart');
         static::mapEvent(EcommerceEvents::InitiateCheckout, 'begin_checkout');

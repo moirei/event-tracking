@@ -48,6 +48,10 @@ module.exports = {
         ],
       },
       {
+        title: "Hooks",
+        path: "/guide/hooks",
+      },
+      {
         title: "Queues",
         path: "/guide/queues",
       },
