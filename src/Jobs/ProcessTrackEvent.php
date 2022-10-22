@@ -26,5 +26,6 @@ class ProcessTrackEvent extends EventJob
     public function handle()
     {
         EventHandler::event($this->eventPayload, $this->channels, $this->adapters);
+        parent::destroy();
     }
 }

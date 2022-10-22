@@ -20,3 +20,9 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 ## 0.2.2
 
 - fix: resolve adapter mapped event name using closure
+-
+
+## 0.2.3
+
+- fix: destroy channel instances created by jobs
+- fix: model observer options persistence

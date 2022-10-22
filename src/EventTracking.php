@@ -128,7 +128,7 @@ class EventTracking
                 $model = $value;
                 $options = [];
             }
-            $model::observe(new ModelObserver($options));
+            $model::observe(ModelObserver::make($options));
         }
     }
 
@@ -335,7 +335,7 @@ class EventTracking
             $options = config($options, []);
         }
         /** @var \MOIREI\EventTracking\Channels\EventChannel */
-        $instance = app()->make($config['handler']);
+        $instance = app($config['handler']);
         $instance->initialize($options);
 
         return $instance;

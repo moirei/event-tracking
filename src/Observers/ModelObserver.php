@@ -3,20 +3,26 @@
 namespace MOIREI\EventTracking\Observers;
 
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use MOIREI\EventTracking\Contracts\TrackableModel;
 use MOIREI\EventTracking\Facades\Events;
 use MOIREI\EventTracking\Helpers;
 
-class ModelObserver
+abstract class ModelObserver
 {
+    protected array $options = [];
+
+    protected static array $optionsCache = [];
+
     protected array $handle = ['created', 'updated',  'restored'];
 
     protected array $other = ['retrieved', 'creating', 'updating', 'saving', 'deleting', 'deleted', 'restoring', 'forceDeleted'];
 
     protected array $reserved = ['$all', '$only', '$except'];
 
-    public function __construct(protected array $options = [])
+    public function __construct()
     {
+        $options = $this->options = static::getOptions();
         $extraEvents = array_filter(
             array_keys($options),
             function ($option) {
@@ -39,6 +45,37 @@ class ModelObserver
                 }
             );
         }
+    }
+
+    /**
+     * Create a new observer class.
+     *
+     * @param  array  $options
+     * @return string
+     */
+    public static function make(array $options): string
+    {
+        // TODO: include event handler methods (e.g. "retrieved") dynamically.
+
+        $className = 'EventTracking_'.Str::random().'_'.time().'_ModelObserver';
+        $baseClass = ModelObserver::class;
+        eval("class $className extends $baseClass{}");
+        $className::setOptions($options);
+
+        return $className;
+    }
+
+    /**
+     * Create a new observer instance.
+     *
+     * @param  array  $options
+     * @return ModelObserver
+     */
+    public static function factory(array $options): ModelObserver
+    {
+        $observer = static::make($options);
+
+        return new $observer;
     }
 
     public function retrieved($model)
@@ -139,6 +176,16 @@ class ModelObserver
         }
 
         return [];
+    }
+
+    protected static function setOptions(array $options)
+    {
+        return Arr::set(static::$optionsCache, static::class, $options);
+    }
+
+    protected static function getOptions(): array
+    {
+        return Arr::get(static::$optionsCache, static::class, []);
     }
 
     protected function handle(string $event, $model)

@@ -10,12 +10,28 @@ use MOIREI\EventTracking\Observers\ModelObserver;
 
 uses()->group('model-observer');
 
+it('should make a new observer class', function () {
+    $class = ModelObserver::make([]);
+
+    expect($class)->toBeString();
+    expect($class)->not->toEqual(ModelObserver::class);
+    expect(is_subclass_of($class, ModelObserver::class))->toBeTrue();
+    expect(class_exists($class))->toBeTrue();
+});
+
+it('should make a new observer instance', function () {
+    $observer = ModelObserver::factory([]);
+
+    expect($observer)->toBeObject();
+    expect(is_subclass_of($observer, ModelObserver::class))->toBeTrue();
+});
+
 it('expects observer event to use class path', function () {
     /** @var object */
     $eventTracking = \Mockery::mock(EventTracking::class.'[track]', [new Request()]);
 
     $user = new User;
-    $observer = new ModelObserver([]);
+    $observer = ModelObserver::factory([]);
 
     $eventName = Helpers::resolveModelEvent(User::class, 'created');
     $eventProperties = invade($observer)->getEventProperties('created', $user, $eventName);
@@ -34,7 +50,7 @@ it('expects observer event to use options name', function () {
 
     $user = new User;
     $eventName = 'User: Created';
-    $observer = new ModelObserver([
+    $observer = ModelObserver::factory([
         'created' => $eventName,
     ]);
 
@@ -53,7 +69,7 @@ it('expects observer event to use options name [2]', function () {
 
     $user = new User;
     $eventName = 'User: Created';
-    $observer = new ModelObserver([
+    $observer = ModelObserver::factory([
         'created' => [
             'name' => $eventName,
         ],
@@ -89,7 +105,7 @@ it('expects observer event to use name from TrackableModel', function () {
             return [];
         }
     };
-    $observer = new ModelObserver([]);
+    $observer = ModelObserver::factory([]);
 
     $eventProperties = invade($observer)->getEventProperties('created', $user, $eventName);
 
@@ -113,7 +129,7 @@ it('expects observer to use event property from options property', function () {
         ];
     };
     $eventName = 'User: Created';
-    $observer = new ModelObserver([
+    $observer = ModelObserver::factory([
         'created' => [
             'name' => $eventName,
             'properties' => 'customProperties',
@@ -143,7 +159,7 @@ it('expects observer to use event property from options method', function () {
         }
     };
     $eventName = 'User: Created';
-    $observer = new ModelObserver([
+    $observer = ModelObserver::factory([
         'created' => [
             'name' => $eventName,
             'properties' => 'customProperties',
@@ -168,7 +184,7 @@ it('expects observer to use event property from options array', function () {
         'a' => 1,
         'b' => 2,
     ];
-    $observer = new ModelObserver([
+    $observer = ModelObserver::factory([
         'created' => [
             'name' => $eventName,
             'properties' => $eventProperties,
@@ -187,7 +203,7 @@ it('should not handle event not in default', function () {
     /** @var object */
     $eventTracking = \Mockery::mock(EventTracking::class.'[track]', [new Request()]);
 
-    $observer = new ModelObserver([]);
+    $observer = ModelObserver::factory([]);
 
     $eventTracking->shouldNotReceive('track');
 
@@ -202,7 +218,7 @@ it('should handle event not in default with $all option', function () {
     $eventTracking = \Mockery::mock(EventTracking::class.'[track]', [new Request()]);
 
     $user = new User();
-    $observer = new ModelObserver([
+    $observer = ModelObserver::factory([
         '$all' => true,
     ]);
 
@@ -215,14 +231,14 @@ it('should handle event not in default with $all option', function () {
 });
 
 it('should include only provided event with $only option', function () {
-    $observer = new ModelObserver([
+    $observer = ModelObserver::factory([
         '$only' => ['retrieved'],
     ]);
     expect(invade($observer)->handle)->toEqual(['retrieved']);
 });
 
 it('should exclude provided event with $except option', function () {
-    $observer = new ModelObserver([
+    $observer = ModelObserver::factory([
         '$except' => ['created'],
     ]);
 
@@ -231,7 +247,7 @@ it('should exclude provided event with $except option', function () {
 });
 
 it('should exclude additional events', function () {
-    $observer = new ModelObserver([
+    $observer = ModelObserver::factory([
         'retrieved' => 'Retrieved',
     ]);
 

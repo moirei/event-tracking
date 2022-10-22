@@ -26,5 +26,6 @@ class ProcessIdentifyEvent extends EventJob
     public function handle()
     {
         EventHandler::identify($this->data, $this->channels, $this->adapters);
+        parent::destroy();
     }
 }
