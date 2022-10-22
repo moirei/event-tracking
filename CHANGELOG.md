@@ -16,3 +16,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 - feat: event hooks
 - refactor: upgrade EventTracking code
+
+## 0.2.2
+
+- fix: resolve adapter mapped event name using closure

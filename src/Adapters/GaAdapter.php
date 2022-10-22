@@ -43,9 +43,7 @@ class GaAdapter extends EventAdapter
     }
 
     /**
-     * Map event properties.
-     *
-     * @param  array<string, \Closure>  $map
+     * Configure adapter
      */
     public function configure()
     {

@@ -113,7 +113,7 @@ abstract class EventAdapter
             Arr::set(
                 static::$eventNameMap,
                 static::class.'.'.Helpers::normaliseValue($key),
-                Helpers::normaliseValue($value)
+                $value,
             );
         }
     }
@@ -219,9 +219,7 @@ abstract class EventAdapter
     }
 
     /**
-     * Call any required logic.
-     *
-     * @param  array<string, \Closure>  $map
+     * Configure adapter
      */
     public function configure()
     {

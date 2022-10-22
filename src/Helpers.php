@@ -168,6 +168,8 @@ class Helpers
             }
             if (is_callable($event)) {
                 $event = $event($data);
+            } else {
+                $event = static::normaliseValue($event);
             }
 
             $properties = $adapter->eventPropertiesAs($data);
