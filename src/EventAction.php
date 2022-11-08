@@ -45,11 +45,7 @@ class EventAction
             if ($eventPayload->user !== ($user = Events::user())) {
                 $eventPayload->user = $user;
             }
-            if (config('event-tracking.queue.disabled')) {
-                EventHandler::event($eventPayload, $this->channels, $this->adapters);
-            } else {
-                ProcessTrackEvent::dispatch($eventPayload, $this->channels, $this->adapters);
-            }
+            $this->handleEvent($eventPayload, $event);
         }
     }
 
@@ -82,10 +78,24 @@ class EventAction
         $identity->ip = $this->device->ip;
         $identity->properties = array_merge($userObject->getArrayCopy(), $properties);
 
-        if (! Events::user()) {
+        if (!Events::user()) {
             Events::user($userObject);
         }
 
+        $this->handleIdentify($identity);
+    }
+
+    protected function handleEvent(EventPayload $eventPayload, $event)
+    {
+        if (config('event-tracking.queue.disabled')) {
+            EventHandler::event($eventPayload, $this->channels, $this->adapters);
+        } else {
+            ProcessTrackEvent::dispatch($eventPayload, $this->channels, $this->adapters);
+        }
+    }
+
+    protected function handleIdentify(IdentityPayload $identity)
+    {
         if (config('event-tracking.queue.disabled')) {
             EventHandler::identify($identity, $this->channels, $this->adapters);
         } else {

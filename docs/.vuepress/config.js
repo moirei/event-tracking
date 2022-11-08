@@ -55,6 +55,10 @@ module.exports = {
         title: "Queues",
         path: "/guide/queues",
       },
+      {
+        title: "Testing",
+        path: "/guide/testing",
+      },
     ],
     nav: [
       { text: "Guide", link: "/guide/track-events" },

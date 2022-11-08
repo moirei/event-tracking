@@ -2,9 +2,14 @@
 
 namespace MOIREI\EventTracking;
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use MOIREI\EventTracking\Adapters\EventAdapter;
 use MOIREI\EventTracking\Objects\EventPayload;
+use MOIREI\EventTracking\Objects\Device as DeviceObject;
+use Sinergi\BrowserDetector\Browser;
+use Sinergi\BrowserDetector\Device;
+use Sinergi\BrowserDetector\Os;
 
 class Helpers
 {
@@ -40,7 +45,7 @@ class Helpers
      */
     public static function isAny(array $array, mixed $value): bool
     {
-        if (! count($array)) {
+        if (!count($array)) {
             return false;
         }
         $array = array_map(fn ($item) => $item instanceof \UnitEnum ? $item->value : $item, $array);
@@ -50,6 +55,26 @@ class Helpers
 
         foreach ($array as $x) {
             if (($inArray = ($x === $value))) {
+                break;
+            }
+        }
+
+        return $inArray;
+    }
+
+    /**
+     * If all of the items in arr1 are arr2
+     *
+     * @param  array  $array
+     * @param  mixed  $value
+     * @return bool
+     */
+    public static function isAllIn(array $array1, array $array2): bool
+    {
+        $inArray = true;
+
+        foreach ($array1 as $v) {
+            if (!($inArray = in_array($v, $array2))) {
                 break;
             }
         }
@@ -106,7 +131,7 @@ class Helpers
     {
         // TODO: throw conflict/resolution error when multile adapters register same mappers
         return array_map(function ($adapter) {
-            if (! isset(static::$adaptersCache[$adapter])) {
+            if (!isset(static::$adaptersCache[$adapter])) {
                 /** @var \MOIREI\EventTracking\Adapters\EventAdapter */
                 $instance = app($adapter);
                 $instance->configure();
@@ -133,7 +158,7 @@ class Helpers
         /** @var EventAdapter */
         return Arr::first($adapters, function (EventAdapter $adapter) use ($channelKey, $data) {
             $channels = $adapter->channels();
-            if (! in_array('*', $channels) && count($channels) && ! in_array($channelKey, $channels)) {
+            if (!in_array('*', $channels) && count($channels) && !in_array($channelKey, $channels)) {
                 return false;
             }
 
@@ -143,7 +168,7 @@ class Helpers
             }
             $except = static::normaliseValue($adapter->except());
 
-            return ! in_array($data->event, $except);
+            return !in_array($data->event, $except);
         });
     }
 
@@ -211,6 +236,30 @@ class Helpers
     {
         $class = is_string($model) ? $model : get_class($model);
 
-        return $class.'@'.$method;
+        return $class . '@' . $method;
+    }
+
+    public static function getDeviceData(Request $request): DeviceObject
+    {
+        $device = new DeviceObject();
+        $browserInfo = new Browser();
+        $osInfo = new Os();
+        $deviceInfo = new Device();
+
+        $device->url = $request->getUri();
+        $device->browser = trim(str_replace('unknown', '', $browserInfo->getName() . ' ' . $browserInfo->getVersion()));
+        $device->os = trim(str_replace('unknown', '', $osInfo->getName() . ' ' . $osInfo->getVersion()));
+        $device->hardware = trim(str_replace('unknown', '', $deviceInfo->getName()));
+        $device->referer = $request->header('referer');
+        $device->refererDomain = ($request->header('referer')
+            ? parse_url($request->header('referer'))['host']
+            : null);
+        $device->ip = $request->ip();
+
+        if (!$device->browser && $browserInfo->isRobot()) {
+            $device->browser = 'Robot';
+        }
+
+        return $device;
     }
 }

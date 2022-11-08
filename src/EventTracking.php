@@ -9,16 +9,13 @@ use Illuminate\Support\Facades\Event;
 use MOIREI\EventTracking\Contracts\EventUser;
 use MOIREI\EventTracking\Contracts\EventUserProxy;
 use MOIREI\EventTracking\Listeners\TrackableEventListener;
-use MOIREI\EventTracking\Objects\Device as DeviceObject;
+use MOIREI\EventTracking\Objects\Device;
 use MOIREI\EventTracking\Objects\User;
 use MOIREI\EventTracking\Observers\ModelObserver;
-use Sinergi\BrowserDetector\Browser;
-use Sinergi\BrowserDetector\Device;
-use Sinergi\BrowserDetector\Os;
 
 class EventTracking
 {
-    protected DeviceObject $device;
+    protected Device $device;
 
     protected static $adapters = [];
 
@@ -32,7 +29,7 @@ class EventTracking
 
     public function __construct(Request $request)
     {
-        $this->device = $this->getDeviceData($request);
+        $this->device = Helpers::getDeviceData($request);
     }
 
     /**
@@ -78,10 +75,23 @@ class EventTracking
         $allChannels = $this->channels();
         $except = is_array($channels) ? $channels : func_get_args();
         $channels = array_filter($allChannels, function ($channel) use ($except) {
-            return ! in_array($channel, $except);
+            return !in_array($channel, $except);
         });
 
         return $this->makeEvent(array_values($channels));
+    }
+
+    /**
+     * Alias of only().
+     * Send event to only named channels.
+     *
+     * @param  string|array<string>  $channels
+     * @return EventAction
+     */
+    public function on($channels): EventAction
+    {
+        $channels = is_array($channels) ? $channels : func_get_args();
+        return $this->only($channels);
     }
 
     /**
@@ -327,7 +337,7 @@ class EventTracking
         // destroyed in queues.
 
         $config = Arr::get($this->channels, $channel);
-        if (! $config) {
+        if (!$config) {
             throw new \InvalidArgumentException("Unknown channel $channel");
         }
         $options = $config['config'];
@@ -365,46 +375,28 @@ class EventTracking
     }
 
     /**
+     * Create a new event action.
+     *
+     * @param  array  $channels
+     * @return EventAction
+     */
+    public function makeEvent(array $channels): EventAction
+    {
+        return new EventAction($channels, $this->device);
+    }
+
+    /**
      * @return string[]
      */
     protected function channels()
     {
         $channels = [];
         foreach ($this->channels as $name => $options) {
-            if (! Arr::get($options, 'disabled')) {
+            if (!Arr::get($options, 'disabled')) {
                 $channels[] = $name;
             }
         }
 
         return $channels;
-    }
-
-    protected function getDeviceData(Request $request): DeviceObject
-    {
-        $device = new DeviceObject();
-        $browserInfo = new Browser();
-        $osInfo = new Os();
-        $deviceInfo = new Device();
-
-        $device->url = $request->getUri();
-        $device->browser = trim(str_replace('unknown', '', $browserInfo->getName().' '.$browserInfo->getVersion()));
-        $device->os = trim(str_replace('unknown', '', $osInfo->getName().' '.$osInfo->getVersion()));
-        $device->hardware = trim(str_replace('unknown', '', $deviceInfo->getName()));
-        $device->referer = $request->header('referer');
-        $device->refererDomain = ($request->header('referer')
-            ? parse_url($request->header('referer'))['host']
-            : null);
-        $device->ip = $request->ip();
-
-        if (! $device->browser && $browserInfo->isRobot()) {
-            $device->browser = 'Robot';
-        }
-
-        return $device;
-    }
-
-    protected function makeEvent(array $channels): EventAction
-    {
-        return new EventAction($channels, $this->device);
     }
 }

@@ -20,9 +20,13 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 ## 0.2.2
 
 - fix: resolve adapter mapped event name using closure
--
 
 ## 0.2.3
 
 - fix: destroy channel instances created by jobs
 - fix: model observer options persistence
+
+## 0.2.4
+
+- feat: add `Events::fake` for tests
+- feat: add `Events::on` alias for `only`

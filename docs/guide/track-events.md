@@ -15,7 +15,7 @@ Events::track("New Order", $order);
 
 This package comes with in-built channels for `Mixpanel` and `GA`.
 
-> Neither of these channels where properly tested at this time. However, `Mixpanel` is fully production ready.
+> Neither of these channels are unit tested at this time. However, `Mixpanel` is fully production ready.
 
 ### Send event to all avaialble channels
 
