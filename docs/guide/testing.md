@@ -19,7 +19,7 @@ Events::assertTrackedTimes(OrderPlaced::class, 2);
 You can fake tracked events for specific set of events using the `fake` or `fakeFor` method:
 
 ```php
-Event::fake([
+Events::fake([
     OrderPlaced::class,
 ]);
 
@@ -33,7 +33,7 @@ Events::assertTracked(OrderPlaced::class);
 You can use `fakeFor` if you only want to fake tracked events for a portion of your test:
 
 ```php
-$order = Event::fakeFor(function () {
+$order = Events::fakeFor(function () {
     $order = factory(Order::class)->create();
 
     event(new OrderPlaced($order));

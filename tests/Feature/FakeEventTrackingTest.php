@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Auth\Events\Login;
+use MOIREI\EventTracking\Events\EcommerceEvents;
 use MOIREI\EventTracking\EventTracking;
 use MOIREI\EventTracking\EventTrackingServiceProvider;
 use MOIREI\EventTracking\Facades\Events;
@@ -42,6 +43,12 @@ it('expect faker to capture fired event', function () {
     Events::fake();
     Events::track('my-event');
     Events::assertTracked('my-event');
+});
+
+it('expect faker to capture fired enum event', function () {
+    Events::fake();
+    Events::track(EcommerceEvents::AddToCart);
+    Events::assertTracked(EcommerceEvents::AddToCart);
 });
 
 it('expect faker to capture fired event on channels', function () {

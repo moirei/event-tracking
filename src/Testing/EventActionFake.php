@@ -3,6 +3,7 @@
 namespace MOIREI\EventTracking\Testing;
 
 use MOIREI\EventTracking\EventAction;
+use MOIREI\EventTracking\Helpers;
 use MOIREI\EventTracking\Objects\Device;
 use MOIREI\EventTracking\Objects\EventPayload;
 use MOIREI\EventTracking\Objects\IdentityPayload;
@@ -28,7 +29,8 @@ class EventActionFake extends EventAction
     protected function handleEvent(EventPayload $eventPayload, $event)
     {
         if ($this->shouldFakeEvent($event, $eventPayload)) {
-            $this->eventTracking->events[$event][] = [
+            $eventKey = Helpers::normaliseValue($event);
+            $this->eventTracking->events[$eventKey][] = [
                 'args' => [$event, $eventPayload],
                 'channels' => $this->channels,
                 // 'adapters' => $this->adapters,

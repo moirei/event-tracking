@@ -54,9 +54,11 @@ class EventTrackingFake extends EventTracking
             return $this->assertTrackedTimes($event, $callback);
         }
 
+        $eventName = Helpers::normaliseValue($event);
+
         PHPUnit::assertTrue(
             $this->tracked($event, $callback)->count() > 0,
-            "The expected [{$event}] event was not tracked."
+            "The expected [{$eventName}] event was not tracked."
         );
     }
 
@@ -80,9 +82,11 @@ class EventTrackingFake extends EventTracking
 
         $channelNames = implode(',', Arr::wrap($channels));
 
+        $eventName = Helpers::normaliseValue($event);
+
         PHPUnit::assertTrue(
             $this->trackedOnChannels($event, $channels, $callback)->count() > 0,
-            "The expected [{$event}] event was not tracked on channels [{$channelNames}]."
+            "The expected [{$eventName}] event was not tracked on channels [{$channelNames}]."
         );
     }
 
@@ -97,10 +101,12 @@ class EventTrackingFake extends EventTracking
     {
         $count = $this->tracked($event)->count();
 
+        $eventName = Helpers::normaliseValue($event);
+
         PHPUnit::assertSame(
             $times,
             $count,
-            "The expected [{$event}] event was tracked {$count} times instead of {$times} times."
+            "The expected [{$eventName}] event was tracked {$count} times instead of {$times} times."
         );
     }
 
@@ -117,10 +123,12 @@ class EventTrackingFake extends EventTracking
         $count = $this->trackedOnChannels($event, $channels)->count();
         $channelNames = implode(',', Arr::wrap($channels));
 
+        $eventName = Helpers::normaliseValue($event);
+
         PHPUnit::assertSame(
             $times,
             $count,
-            "The expected [{$event}] event was tracked {$count} times instead of {$times} times on channels [{$channelNames}]."
+            "The expected [{$eventName}] event was tracked {$count} times instead of {$times} times on channels [{$channelNames}]."
         );
     }
 
@@ -137,10 +145,12 @@ class EventTrackingFake extends EventTracking
             [$event, $callback] = [$this->firstClosureParameterType($event), $event];
         }
 
+        $eventName = Helpers::normaliseValue($event);
+
         PHPUnit::assertCount(
             0,
             $this->tracked($event, $callback),
-            "The unexpected [{$event}] event was tracked."
+            "The unexpected [{$eventName}] event was tracked."
         );
     }
 
@@ -158,10 +168,12 @@ class EventTrackingFake extends EventTracking
             [$event, $callback] = [$this->firstClosureParameterType($event), $event];
         }
 
+        $eventName = Helpers::normaliseValue($event);
+
         PHPUnit::assertCount(
             0,
             $this->trackedOnChannels($event, $channels, $callback),
-            "The unexpected [{$event}] event was tracked."
+            "The unexpected [{$eventName}] event was tracked."
         );
     }
 
@@ -196,7 +208,9 @@ class EventTrackingFake extends EventTracking
 
         $callback = $callback ?: fn () => true;
 
-        return collect($this->events[$event])->filter(
+        $eventName = Helpers::normaliseValue($event);
+
+        return collect($this->events[$eventName])->filter(
             fn ($data) => $callback(...Arr::get($data, 'args', []))
         );
     }
@@ -218,7 +232,9 @@ class EventTrackingFake extends EventTracking
         $callback = $callback ?: fn () => true;
         $channels = Arr::wrap($channels);
 
-        return collect($this->events[$event])->filter(
+        $eventName = Helpers::normaliseValue($event);
+
+        return collect($this->events[$eventName])->filter(
             function ($data) use ($callback, $channels) {
                 $trackedChannels = Arr::get($data, 'channels', []);
                 return Helpers::isAllIn($channels, $trackedChannels) && $callback(...Arr::get($data, 'args', []));
@@ -234,7 +250,8 @@ class EventTrackingFake extends EventTracking
      */
     public function hasTracked($event)
     {
-        return isset($this->events[$event]) && !empty($this->events[$event]);
+        $eventName = Helpers::normaliseValue($event);
+        return isset($this->events[$eventName]) && !empty($this->events[$eventName]);
     }
 
     /**

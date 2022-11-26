@@ -2,18 +2,15 @@
 
 namespace MOIREI\EventTracking\Facades;
 
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Facade;
 use MOIREI\EventTracking\Contracts\EventUser;
 use MOIREI\EventTracking\Contracts\EventUserProxy;
 use MOIREI\EventTracking\EventAction;
-use MOIREI\EventTracking\EventTracking;
 use MOIREI\EventTracking\Objects\User;
-use MOIREI\EventTracking\Testing\EventActionFake;
 use MOIREI\EventTracking\Testing\EventTrackingFake;
 
 /**
- * @method static void track(string $event, array $properties = [])
+ * @method static void track($event, array $properties = [])
  * @method static void identify(EventUser|EventUserProxy|User|string $user, array $properties = [])
  * @method static EventAction all()
  * @method static EventAction except($channels)
@@ -30,8 +27,8 @@ use MOIREI\EventTracking\Testing\EventTrackingFake;
  * @method static array getSuperProperties()
  * @method static User|EventUser|EventUserProxy|null user(User|EventUser|EventUserProxy|null $user = null)
  * @method static \MOIREI\EventTracking\Channels\EventChannel getChannel(string $channel)
- * @method static void before(mixed $events, Closure $handler)
- * @method static void after(mixed $events, Closure $handler)
+ * @method static void before(mixed $events, \Closure $handler)
+ * @method static void after(mixed $events, \Closure $handler)
  * @method static array getEventHookHandlers(string $hook, $event)
  * @method static void assertTracked($event, $callback = null)
  * @method static void assertTrackedOnChannels($event, $channels, $callback = null)

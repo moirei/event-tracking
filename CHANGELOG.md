@@ -30,3 +30,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 - feat: add `Events::fake` for tests
 - feat: add `Events::on` alias for `only`
+
+## 0.2.5
+
+- fix: `Events::fake` should fake Enum events
