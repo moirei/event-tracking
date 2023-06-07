@@ -11,7 +11,7 @@ return [
     'channels' => [
         /*
         |--------------------------------------------------------------------------
-        | Google Analytics Channel
+        | Mixpanel Channel
         |--------------------------------------------------------------------------
         |
         | Requires installing and configuring mixpanel/mixpanel-php
@@ -31,6 +31,27 @@ return [
                 'debug' => env('MIXPANEL_DEBUG', config('env') === 'production' ? false : true),
                 'consumer' => 'curl', // `secket` is the default consumer. `curl` is more stable for working with queues but requires `use_ssl` set to `true`
                 'use_ssl' => true,
+            ],
+            'disabled' => false,
+        ],
+
+        /*
+        |--------------------------------------------------------------------------
+        | PostHog Channel
+        |--------------------------------------------------------------------------
+        |
+        | Requires installing and configuring posthog/posthog-php
+        | @see https://github.com/posthog/posthog-php
+        */
+        'posthog' => [
+            'handler' => \MOIREI\EventTracking\Channels\Posthog::class,
+            // 'config' => 'services.posthog',
+            'config' => [
+                'token' => env('POSTHOG_TOKEN'),
+                'host' => env('POSTHOG_HOST', 'https://app.posthog.com'),
+                'debug' => env('POSTHOG_DEBUG', 'production' === config('env') ? false : true),
+                'consumer' => 'lib_curl', // `socket`, `file`, `fork_curl`, `lib_curl`
+                'ssl' => true,
             ],
             'disabled' => false,
         ],

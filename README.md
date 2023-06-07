@@ -35,11 +35,12 @@ Identify and update a user profile
 
 ```php
 Events::identify($user->id, [
-    '$first_name'       => $user->first_name,
-    '$last_name'        => $user->last_name,
-    '$email'            => $user->email,
-    '$phone'            => $user->phone,
-    "Favorite Color"    => $user->favoriteColor,
+    'name'             => $user->name,
+    'email'            => $user->email,
+    'phone'            => $user->phone,
+    'city'             => $user->city,
+    'country'          => $user->country,
+    "Favorite Color"   => $user->favoriteColor,
 ]);
 ```
 

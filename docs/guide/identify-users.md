@@ -5,11 +5,17 @@ As with most analytics libraries, you can identify and update a user profile
 ```php
 // send only to mixpanel
 Events::channel('mixpanel')->identify($user->id, [
-    '$first_name'       => $user->first_name,
-    '$last_name'        => $user->last_name,
-    '$email'            => $user->email,
-    '$phone'            => $user->phone,
-    "Favorite Color"    => $user->favoriteColor,
+    'createdAt'        => $user->createdAt,
+    'updatedAt'        => $user->updatedAt,
+    'name'             => $user->name,
+    'firstName'        => $user->first_name,
+    'firstName'        => $user->last_name,
+    'email'            => $user->email,
+    'phone'            => $user->phone,
+    'city'             => $user->city,
+    'region'           => $user->region,
+    'country'          => $user->country,
+    "Favorite Color"   => $user->favoriteColor,
 ]);
 ```
 

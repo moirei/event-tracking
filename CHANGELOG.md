@@ -34,3 +34,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 ## 0.2.5
 
 - fix: `Events::fake` should fake Enum events
+
+## 0.3.0
+
+- feat: add `posthog` channel

@@ -40,7 +40,8 @@
     "mixpanel/mixpanel-php": "^2.10",
     "spatie/invade": "^1.1",
     "theiconic/php-ga-measurement-protocol": "^2.9",
-    "laravel/pint": "^1.2"
+    "laravel/pint": "^1.2",
+    "posthog/posthog-php": "^3.0"
   },
   "suggest": {
     "mixpanel/mixpanel-php": "Required to use in-built Mixpanel Channel",
