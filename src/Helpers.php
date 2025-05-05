@@ -3,13 +3,13 @@
 namespace MOIREI\EventTracking;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
 use MOIREI\EventTracking\Adapters\EventAdapter;
 use MOIREI\EventTracking\Objects\EventPayload;
 use MOIREI\EventTracking\Objects\Device as DeviceObject;
 use Sinergi\BrowserDetector\Browser;
 use Sinergi\BrowserDetector\Device;
 use Sinergi\BrowserDetector\Os;
+use Illuminate\Support\Arr;
 
 class Helpers
 {
@@ -246,15 +246,17 @@ class Helpers
         $osInfo = new Os();
         $deviceInfo = new Device();
 
+        $referer = $request->header('referer');
+
         $device->url = $request->getUri();
         $device->browser = trim(str_replace('unknown', '', $browserInfo->getName() . ' ' . $browserInfo->getVersion()));
         $device->os = trim(str_replace('unknown', '', $osInfo->getName() . ' ' . $osInfo->getVersion()));
         $device->hardware = trim(str_replace('unknown', '', $deviceInfo->getName()));
-        $device->referer = $request->header('referer');
-        $device->refererDomain = ($request->header('referer')
-            ? parse_url($request->header('referer'))['host']
-            : null);
+        $device->referer = $referer;
         $device->ip = $request->ip();
+        $device->refererDomain = $referer
+            ? Arr::get(parse_url($referer), 'host')
+            : null;
 
         if (!$device->browser && $browserInfo->isRobot()) {
             $device->browser = 'Robot';

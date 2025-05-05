@@ -2,6 +2,7 @@
 
 use MOIREI\EventTracking\Channels\GoogleAnalytics;
 use MOIREI\EventTracking\Channels\Mixpanel;
+use MOIREI\EventTracking\Channels\PostHog;
 use MOIREI\EventTracking\EventTrackingServiceProvider;
 use MOIREI\EventTracking\Facades\Events;
 
@@ -30,14 +31,18 @@ it('should send event to GA channel', function () {
     $eventChannel1 = \Mockery::mock(GoogleAnalytics::class.'[track,initialize]');
     /** @var \Mockery\LegacyMockInterface */
     $eventChannel2 = \Mockery::mock(Mixpanel::class.'[track,initialize]');
+    $eventChannel3 = \Mockery::mock(PostHog::class.'[track,initialize]');
 
     $eventChannel1->shouldReceive('track')->times(2);
     $eventChannel1->shouldReceive('initialize');
     $eventChannel2->shouldNotReceive('initialize');
     $eventChannel2->shouldNotReceive('track');
+    $eventChannel3->shouldNotReceive('initialize');
+    $eventChannel3->shouldNotReceive('track');
 
     $this->instance(GoogleAnalytics::class, $eventChannel1);
     $this->instance(Mixpanel::class, $eventChannel2);
+    $this->instance(PostHog::class, $eventChannel3);
     app()->register(EventTrackingServiceProvider::class);
 
     Events::only('ga')->track('my-event');
