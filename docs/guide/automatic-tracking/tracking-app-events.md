@@ -1,8 +1,10 @@
-# Tracking App Events
+# Tracking Application Events
 
-## Using TrackableEvent
+This package allows you to automatically track application-level events through simple interfaces and flexible configuration.
 
-Your application events that implement `TrackableEvent` will automatically be tracked.
+## Using `TrackableEvent`
+
+Any of your custom application events that implement the `TrackableEvent` interface will be automatically tracked:
 
 ```php
 namespace App\Events;
@@ -18,9 +20,9 @@ class PasswordUpdated implements TrackableEvent
 }
 ```
 
-## Auto tracking external events
+## Auto-tracking external events
 
-Events defined in vendor files can be included via configuration.
+You can also auto-track vendor events (like Laravel Auth events) by specifying them in your config:
 
 ```php
 // connfig\event-tracking.php
@@ -34,7 +36,9 @@ Events defined in vendor files can be included via configuration.
 ],
 ```
 
-Registered events may be mapped with different names or properties
+## Mapping event names and properties
+
+You can rename events or specify how to extract properties using a callback or method reference:
 
 ```php
 ...
@@ -53,6 +57,8 @@ Registered events may be mapped with different names or properties
 
 ## Manually registering events
 
+Use `listen()` to manually register one or more events for tracking:
+
 ```php
 Events::listen(OrderPlaced::class);
 Events::listen(OrderPlaced::class, ...);
@@ -61,6 +67,8 @@ Events::listen([
     ...
 ]);
 ```
+
+You may also use the service instance directly:
 
 ```php
 EventTracking::listen([
@@ -74,3 +82,37 @@ EventTracking::listen([
     ]
 ]);
 ```
+
+## Disabling auto-tracking
+
+To fully disable auto-tracking via configuration:
+
+```php
+...
+'auto_tracking' => [
+    ...
+    'disabled' => true,
+],
+```
+
+To disable only when running in console (Artisan or queued jobs):
+
+```php
+...
+'auto_tracking' => [
+    ...
+    'disable_in_console' => true,
+],
+```
+
+## Temporarily disabling auto-tracking
+
+To skip auto-tracking for a specific operation or block of logic:
+
+```php
+Events::withoutAutoTracking(function(){
+    // Perform operations that should not be tracked
+});
+```
+
+This will automatically restore the previous tracking state once the block completes.

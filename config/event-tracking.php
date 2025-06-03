@@ -134,6 +134,7 @@ return [
     */
     'auto_tracking' => [
         'disabled' => false,
+        'disable_in_console' => false,
         'observe' => [
             // \App\Models\User::class,
             // \App\Models\User::class => [

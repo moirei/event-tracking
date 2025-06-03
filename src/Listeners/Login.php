@@ -1,6 +1,6 @@
 <?php
 
-namespace GeneaLabs\LaravelMixpanel\Listeners;
+namespace MOIREI\EventTracking\Listeners;
 
 use MOIREI\EventTracking\Facades\Events;
 
@@ -11,6 +11,8 @@ class Login
      */
     public function handle($event)
     {
-        Events::identify($event->user->getKey());
+        if(Events::isAutoTrackingEnabled()){
+            Events::identify($event->user->getKey());
+        }
     }
 }

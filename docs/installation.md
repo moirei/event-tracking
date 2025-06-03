@@ -10,4 +10,10 @@ composer require moirei/event-tracking
 php artisan vendor:publish --tag=event-tracking
 ```
 
-The configuration file will be placed in `config/event-tracking.php`
+This will create the following configuration file:
+
+```bash
+config/event-tracking.php
+```
+
+Use this file to configure event channels, auto-tracking behavior, user identification, and more.

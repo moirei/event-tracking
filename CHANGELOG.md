@@ -38,3 +38,8 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 ## 0.3.0
 
 - feat: add `posthog` channel
+
+## 0.4.0
+
+- feat: ability to disable auto-tracking on the fly
+- feat: disabled auto-tracking when running in console

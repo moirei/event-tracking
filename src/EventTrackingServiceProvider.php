@@ -16,10 +16,11 @@ class EventTrackingServiceProvider extends ServiceProvider
             ], 'event-tracking');
         }
 
-        if (! config('event-tracking.auto_tracking.disabled', false)) {
-            Events::observe(config('event-tracking.auto_tracking.observe', []));
-            Events::listen(TrackableEvent::class);
-            Events::listen(config('event-tracking.auto_tracking.listen', []));
+        if (
+            ! config('event-tracking.auto_tracking.disabled', false) &&
+           (!app()->runningInConsole() || !config('event-tracking.auto_tracking.disable_in_console'))
+        ) {
+            $this->registerListeners();
         }
 
         Events::registerAdapter(config('event-tracking.adapters', []));
@@ -35,5 +36,12 @@ class EventTrackingServiceProvider extends ServiceProvider
     public function provides(): array
     {
         return ['eventTracking'];
+    }
+
+    protected function registerListeners()
+    {
+        Events::observe(config('event-tracking.auto_tracking.observe', []));
+        Events::listen(TrackableEvent::class);
+        Events::listen(config('event-tracking.auto_tracking.listen', []));
     }
 }

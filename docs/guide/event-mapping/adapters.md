@@ -1,28 +1,29 @@
 # Adapters
 
-Adapters make it possible to tap into any given channel and event in order to modify the event name or payload properties.
+**Adapters** allow you to intercept events as they are sent to a channel and modify their names or payload properties.
+This is especially useful for formatting data differently across platforms like **Mixpanel**, **Google Analytics**, or **BigQuery**.
 
-For example if you send events to `Mixpanel`, `GA`, and `BigQuery`, you can format certain events going to `Mixpanel` and `GA`.
+## Example: Custom Adapter
 
 ```php
-use MOIREI\EventTracking\Adapters\Adapters;
+use Illuminate\Support\Arr;
+use MOIREI\EventTracking\Adapters\EventAdapter;
+use MOIREI\EventTracking\Objects\EventPayload;
 
 class MyAdapter extends EventAdapter
 {
     /**
-     * Omit to apply to all channels.
+     * Apply this adapter only to specific channels.
      *
-     * {@inheritdoc}
+     * Return `null` or omit to apply to all channels.
      */
     public function channels()
     {
-        return [
-          'mixpanel', 'ga',
-        ];
+        return ['mixpanel', 'ga'];
     }
 
     /**
-     * {@inheritdoc}
+     * Apply this adapter only to specific events.
      */
     public function only()
     {
@@ -34,31 +35,28 @@ class MyAdapter extends EventAdapter
     }
 
     /**
-     * Map event properties.
-     *
-     * @param  array<string, \Closure>  $map
+     * Configure event name and property mappings.
      */
     public function configure()
     {
-        static::mapEvent(Illuminate\Auth\Events\Login::class, 'Login');
-        static::mapEvent(Illuminate\Auth\Events\Logout::class, 'Logout');
-        static::mapEvent(Illuminate\Auth\Events\Registered::class, 'Signup');
+        // Rename individual events
+        static::mapEvent(\Illuminate\Auth\Events\Login::class, 'Login');
+        static::mapEvent(\Illuminate\Auth\Events\Logout::class, 'Logout');
+        static::mapEvent(\Illuminate\Auth\Events\Registered::class, 'Signup');
 
-        // or
-
+        // Or use batch mapping
         static::mapEvents([
             \Illuminate\Auth\Events\Login::class => 'Login',
             \Illuminate\Auth\Events\Logout::class => 'Logout',
             \Illuminate\Auth\Events\Registered::class => 'Signup',
         ]);
 
-        // map event property
-
+        // Customize event properties
         static::mapEventProperty(
             \Illuminate\Auth\Events\Login::class,
             function (EventPayload $payload) {
                 $user = Arr::get($payload->properties, 'user');
-                ...
+                // Process and return the transformed value
                 return $user;
             }
         );
@@ -66,19 +64,17 @@ class MyAdapter extends EventAdapter
 }
 ```
 
-In this case only `Login`, `Logout` and `Registered` events are renamed by this adapter.
+In this example, only `Login`, `Logout`, and `Registered` events are renamed and modified when sent to `mixpanel` and `ga`.
 
-When mapping event properties, it's possible to register multiple events at once. You can also pass a string as a value. If the there is an existing public method then it's called to retrieve the mapped properties value; if not, then the value is used as key to pick the existing properties.
+## Mapping properties via method name
+
+Instead of providing a closure, you can also pass a method name or property key:
 
 ```php
 class MyAdapter extends EventAdapter
 {
-    ...
-
     public function configure()
     {
-        ...
-
         static::mapEventProperty([
             \Illuminate\Auth\Events\Login::class,
             \Illuminate\Auth\Events\Logout::class,
@@ -86,29 +82,36 @@ class MyAdapter extends EventAdapter
         ], 'getUserProperty');
     }
 
-    public function getUserProperty(EventPayload $payload){
+    public function getUserProperty(EventPayload $payload)
+    {
         $user = Arr::get($payload->properties, 'user');
-        ...
+        // Transform user data
         return $user;
     }
 }
 ```
 
-You may register adapters in config;
+If the string provided is:
+
+- A method name (like getUserProperty), it will be called.
+- A property key (like 'user.email'), it will extract that value from the payload.
+
+## Registering adapters
+
+You can register adapters in your config:
 
 ```php
 // config/event-tracking.php
 
-return [
-    ...
-    'adapters' => [
-        \App\EventTracking\MyAdapter::class,
-    ],
-];
+'adapters' => [
+    \App\EventTracking\MyAdapter::class,
+],
 ```
 
-Or manually (ideally in the boot method of a service provider),
+Or register them manually (e.g., in a service provider’s `boot()` method):
 
 ```php
 Events::registerAdapter(MyAdapter::class);
 ```
+
+Adapters provide a powerful and clean way to centralize naming and formatting rules across all your analytics channels.

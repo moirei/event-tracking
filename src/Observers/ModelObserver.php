@@ -190,9 +190,11 @@ abstract class ModelObserver
 
     protected function handle(string $event, $model)
     {
-        $eventName = $this->getEventName($event, $model);
-        if (in_array($event, $this->handle)) {
-            Events::track($eventName, $this->getEventProperties($event, $model, $eventName));
+        if(Events::isAutoTrackingEnabled()){
+            $eventName = $this->getEventName($event, $model);
+            if (in_array($event, $this->handle)) {
+                Events::track($eventName, $this->getEventProperties($event, $model, $eventName));
+            }
         }
     }
 }

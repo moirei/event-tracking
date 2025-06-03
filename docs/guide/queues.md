@@ -1,19 +1,27 @@
 # Queues
 
-Tracked events can of course be processed as queued jobs in the background.
+Tracked events can be processed in the background using Laravel’s queue system.
+
+## Configuration
+
+To enable queuing, configure the `queue` section in your `config/event-tracking.php` file:
 
 ```php
-// config/event-tracking.php
-
 return [
-    ...
+    // ...
+
     'queue' => [
-        'connection' => 'redis',
-        'queue' => 'default',
-        'middleware' => [],
-        'disabled' => false,
+        'connection' => 'redis',    // Laravel queue connection to use
+        'queue' => 'default',       // Queue name
+        'middleware' => [],         // Optional middleware for the queued job
+        'disabled' => false,        // Set to true to disable queuing
     ],
 ];
 ```
 
-When queue is disabled, events are immediately processed.
+## Behavior
+
+- When disabled is set to false, events will be dispatched to the queue and processed asynchronously.
+- When disabled is true, events will be processed immediately and synchronously.
+
+This setup allows you to offload event tracking from the main request cycle, improving performance and reliability in production environments.

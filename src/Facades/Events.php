@@ -2,6 +2,7 @@
 
 namespace MOIREI\EventTracking\Facades;
 
+use Closure;
 use Illuminate\Support\Facades\Facade;
 use MOIREI\EventTracking\Contracts\EventUser;
 use MOIREI\EventTracking\Contracts\EventUserProxy;
@@ -42,6 +43,8 @@ use MOIREI\EventTracking\Testing\EventTrackingFake;
  */
 class Events extends Facade
 {
+    protected static bool $autoTrackingEnabled = true;
+
     /**
      * Replace the bound instance with a fake.
      *
@@ -105,6 +108,62 @@ class Events extends Facade
         return tap($callable(), function () use ($originalEventTracking) {
             static::swap($originalEventTracking);
         });
+    }
+
+    /**
+     * Enable automatic event tracking globally.
+     *
+     * When enabled, events dispatched via listen/observe will be tracked automatically.
+     *
+     * @return void
+     */
+    public static function enableAutoTracking(): void
+    {
+        static::$autoTrackingEnabled = true;
+    }
+
+    /**
+     * Disable automatic event tracking globally.
+     *
+     * Useful when running background tasks, commands, or testing
+     * where you want to prevent auto-dispatching events.
+     *
+     * @return void
+     */
+    public static function disableAutoTracking(): void
+    {
+        static::$autoTrackingEnabled = false;
+    }
+
+    /**
+     * Check if automatic event tracking is currently enabled.
+     *
+     * @return bool
+     */
+    public static function isAutoTrackingEnabled(): bool
+    {
+        return static::$autoTrackingEnabled;
+    }
+
+    /**
+     * Temporarily disable automatic event tracking while executing the given callback.
+     *
+     * Automatically restores the previous auto-tracking state after the callback runs.
+     *
+     * @param  \Closure  $callback
+     * @return mixed
+     */
+    public static function withoutAutoTracking(Closure $callback): mixed
+    {
+        $original = static::$autoTrackingEnabled;
+
+        static::$autoTrackingEnabled = false;
+
+        try {
+            return $callback();
+        } finally {
+            static::$autoTrackingEnabled = $original;
+        }
     }
 
     /**

@@ -12,10 +12,12 @@ class TrackableEventListener
      */
     public function handle($event)
     {
-        if ($event instanceof TrackableEvent) {
-            Events::track($event->getEventName(), $event->getEventProperties());
-        } else {
-            Events::track(get_class($event), get_object_vars($event));
+        if(Events::isAutoTrackingEnabled()){
+            if ($event instanceof TrackableEvent) {
+                Events::track($event->getEventName(), $event->getEventProperties());
+            } else {
+                Events::track(get_class($event), get_object_vars($event));
+            }
         }
     }
 }

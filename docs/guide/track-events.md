@@ -1,6 +1,6 @@
 # Track Events
 
-This package was created to really simplify sending both app and models events from a Laravel application to external analytics services.
+This package simplifies sending both application and model events from your Laravel app to external analytics services.
 
 ```php
 
@@ -9,21 +9,21 @@ use MOIREI\EventTracking\Facades\Events;
 Events::track("New Order", $order);
 ```
 
-> Declaring the Events facade is optional.
+> Importing the `Events` facade is optional if you're using global aliases.
 
 ## Channels
 
-This package comes with in-built channels for `Mixpanel` and `GA`.
+The package includes built-in support for `Mixpanel` and `Google Analytics (GA)`.
 
-> Neither of these channels are unit tested at this time. However, `Mixpanel` is fully production ready.
+> ⚠️ Note: These channels are not currently unit tested. However, `Mixpanel` is production-ready and stable.
 
-### Send event to all avaialble channels
+### Send to all active channels
 
 ```php
 Events::all()->track('my-event');
 ```
 
-### Send event to only a few channels
+### Send to specific channels
 
 ```php
 Events::only('mixpanel', 'ga')->track('my-event');
@@ -38,3 +38,5 @@ Events::except('mixpanel', 'ga')->track('my-event');
 // or
 Events::except(['mixpanel', 'ga'])->track('my-event');
 ```
+
+These fluent methods give you full control over which analytics channels receive which events.
